@@ -175,7 +175,7 @@ namespace RcclUnitTesting
     case ncclCollScatter:       ss << "ncclScatter";       break;
     case ncclCollAllToAll:      ss << "ncclAllToAll";      break;
     case ncclCollSend:          ss << "ncclSend";          break;
-    case ncclCollRecv:          ss << "ncclRevv";          break;
+    case ncclCollRecv:          ss << "ncclRecv";          break;
     default:                    ss << "[Unknown]";         break;
     }
 
