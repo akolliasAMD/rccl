@@ -13,11 +13,11 @@ namespace RcclUnitTesting
 
     // Configuration
     // ncclFunc_t                  const  funcType        = ncclCollAllReduce;
-    ncclFunc_t                  const  funcType        = {ncclCollSend, ncclCollRecv}; // akollias
+    std::vector<ncclFunc_t>     const  funcType        = {ncclCollSend, ncclCollRecv}; // akollias
     // simple send receive test would check that communication is going for rank a to rank b
     // you need to do send and receive without caring about redOps, but care about just data...
     std::vector<ncclDataType_t> const& dataTypes       = {ncclFloat};
-    // std::vector<ncclRedOp_t>    const& redOps          = {ncclSum}; //Not important for send receive tests
+    std::vector<ncclRedOp_t>    const& redOps          = {ncclSum}; //Not important for send receive tests
     std::vector<int>            const  numElements     = {1024}; // akollias, one test for now
     // std::vector<int>            const  numElements     = {1048576, 53327, 1024};
     int                         const  root            = 0;
@@ -28,11 +28,13 @@ namespace RcclUnitTesting
     // CollFuncPtr prepFunc = DefaultPrepData_SendRecv; // akollias
     bool isCorrect = true;
     // for (int totalRanks = testBed.ev.minGpus; totalRanks <= testBed.ev.maxGpus && isCorrect; ++totalRanks) // big iterator for all ranks
-    int totalRanks = 2 // akollias this to change on maxGpus
+    int totalRanks = 2; // akollias this to change on maxGpus
     // for (int isMultiProcess = 0; isMultiProcess <= 1 && isCorrect; ++isMultiProcess) // akollias disable multi process in the beggining enable after
     // { // akollias multiprocess
       // Test either single process all GPUs, or 1 process per GPU
-      int const numProcesses = isMultiProcess ? totalRanks : 1;
+      // int const numProcesses = isMultiProcess ? totalRanks : 1; // one process for the moment
+      int const numProcesses = 1;
+      int const isMultiProcess = 0;
       testBed.InitComms(TestBed::GetDeviceIdsList(numProcesses, totalRanks), numCollPerGroup);
 
       // for (int redOpIdx = 0; redOpIdx < redOps.size() && isCorrect; ++redOpIdx)
@@ -53,7 +55,7 @@ namespace RcclUnitTesting
           {
             testBed.SetCollectiveArgs(funcType[0], //send here
                                     dataTypes[dataIdx],
-                                    -1, // akollias instead of redops ??
+                                    redOps[0], // akollias instead of redops ??
                                     currentRank,
                                     numElements[0], 
                                     numElements[0],
@@ -62,7 +64,7 @@ namespace RcclUnitTesting
 
             testBed.SetCollectiveArgs(funcType[1], // rec here
                                     dataTypes[dataIdx],
-                                    -1, // akollias instead of redops ??
+                                    redOps[0], // akollias instead of redops ??
                                     root,
                                     numElements[0], 
                                     numElements[0],
