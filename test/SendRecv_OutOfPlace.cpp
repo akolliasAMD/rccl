@@ -13,7 +13,7 @@ namespace RcclUnitTesting
 
     // Configuration
     // ncclFunc_t                  const  funcType        = ncclCollAllReduce;
-    ncclFunc_t                  const  funcType        = ncclCollSendRecv; // akollias
+    ncclFunc_t                  const  funcType        = {ncclCollSend, ncclCollRecv}; // akollias
     // simple send receive test would check that communication is going for rank a to rank b
     // you need to do send and receive without caring about redOps, but care about just data...
     std::vector<ncclDataType_t> const& dataTypes       = {ncclFloat};
@@ -24,24 +24,6 @@ namespace RcclUnitTesting
     bool                        const  inPlace         = false;
     bool                        const  useManagedMem   = false;
     int                         const  numCollPerGroup = numElements.size();
-
-    // This tests runs 3 collectives in the same group call
-
-
-    // akollias
-
-    // need to be in group calls 
-          // ncclSend     (const void* sendbuff,                 size_t count, ncclDataType_t datatype, int peer,       ncclComm_t comm, hipStream_t stream);
-          // ncclRecv     (      void* recvbuff,                 size_t count, ncclDataType_t datatype, int peer,       ncclComm_t comm, hipStream_t stream);
-          // ncclAllReduce(const void* sendbuff, void* recvbuff, size_t count, ncclDataType_t datatype, ncclRedOp_t op, ncclComm_t comm, hipStream_t stream);
-    // initComms for 2 devices (later for all)
-    // testBed.SetCollectiveArgs(); // send receive 
-    // testBed.AllocateMem(inPlace, useManagedMem);
-    // testBed.PrepareData();
-    // testBed.ExecuteCollectives();
-    // testBed.ValidateResults(isCorrect);
-    // testBed.DeallocateMem();
-    // 
 
     // CollFuncPtr prepFunc = DefaultPrepData_SendRecv; // akollias
     bool isCorrect = true;
@@ -63,19 +45,34 @@ namespace RcclUnitTesting
                totalRanks, ncclDataTypeNames[dataTypes[dataIdx]]); // akollias no Red_ops
 
         // Run all element sizes in parallel as single group // akollias for now this will only run for one test
-        for (int collIdx = 0; collIdx < numCollPerGroup; ++collIdx)
-        {
-          testBed.SetCollectiveArgs(funcType, //some of them should be send some should be rec?
+        // for (int collIdx = 0; collIdx < numCollPerGroup; ++collIdx) // akollias for now we are removing differnt collectives, we need just specfically with every rank
+
+        for (int currentRank = 0; currentRank < totalRanks; ++currentRank)
+        { // so root needs the recv number, and recv gpu needs the root rank
+          if (currentRank != root)
+          {
+            testBed.SetCollectiveArgs(funcType[0], //send here
                                     dataTypes[dataIdx],
-                                    // redOps[redOpIdx], // akollias this does not exist but has no default value
                                     -1, // akollias instead of redops ??
-                                    root, // akollias this will probably need to change to takje into  consideration the other ones needing to send
-                                    numElements[collIdx], // akollias here for first time it will all be 1024
-                                    numElements[collIdx],
-                                    collIdx);
+                                    currentRank,
+                                    numElements[0], 
+                                    numElements[0],
+                                    0,
+                                    root); // akollias this will be the rank to send or receive.....
+
+            testBed.SetCollectiveArgs(funcType[1], // rec here
+                                    dataTypes[dataIdx],
+                                    -1, // akollias instead of redops ??
+                                    root,
+                                    numElements[0], 
+                                    numElements[0],
+                                    0,
+                                    currentRank); // akollias this will be the rank to send or receive.....
+
+          }
         }
         testBed.AllocateMem(inPlace, useManagedMem);
-        testBed.PrepareData(); // Default prep RecSend
+        testBed.PrepareData(); // Default prep RecSend might work
         testBed.ExecuteCollectives();
         testBed.ValidateResults(isCorrect);
         testBed.DeallocateMem();
