@@ -42,13 +42,13 @@ namespace RcclUnitTesting
     // testBed.ValidateResults(isCorrect);
     // testBed.DeallocateMem();
     // 
-    
+
     // CollFuncPtr prepFunc = DefaultPrepData_SendRecv; // akollias
     bool isCorrect = true;
     // for (int totalRanks = testBed.ev.minGpus; totalRanks <= testBed.ev.maxGpus && isCorrect; ++totalRanks) // big iterator for all ranks
     int totalRanks = 2 // akollias this to change on maxGpus
-    for (int isMultiProcess = 0; isMultiProcess <= 1 && isCorrect; ++isMultiProcess)
-    {
+    // for (int isMultiProcess = 0; isMultiProcess <= 1 && isCorrect; ++isMultiProcess) // akollias disable multi process in the beggining enable after
+    // { // akollias multiprocess
       // Test either single process all GPUs, or 1 process per GPU
       int const numProcesses = isMultiProcess ? totalRanks : 1;
       testBed.InitComms(TestBed::GetDeviceIdsList(numProcesses, totalRanks), numCollPerGroup);
@@ -81,7 +81,7 @@ namespace RcclUnitTesting
         testBed.DeallocateMem();
       }
       testBed.DestroyComms();
-    }
+    // } // akollias multiprocess
     testBed.Finalize();
   }
 }

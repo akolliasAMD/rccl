@@ -438,7 +438,7 @@ namespace RcclUnitTesting
                                    this->streams[localRank]),
                           "ncclSend");
           break;
-        case ncclCollRecv:
+        case ncclCollRecv: // akollias 
           CHILD_NCCL_CALL(ncclRecv(collArg.outputGpu.ptr,
                                    collArg.numOutputElements,
                                    collArg.dataType,

@@ -143,6 +143,42 @@ namespace RcclUnitTesting
     return TEST_SUCCESS;
   }
 
+  ErrCode PtrUnion::FillPatternSR(ncclDataType_t const dataType,
+                                size_t         const numElements,
+                                int            const globalRank,
+                                bool           const isGpuMem)
+  {
+    PtrUnion temp;
+    size_t const numBytes = numElements * DataTypeToBytes(dataType);
+
+    // If this is GPU memory, create a CPU temp buffer otherwise fill CPU memory directly
+    if (isGpuMem)
+      temp.AllocateCpuMem(numBytes);
+    else
+      temp.Attach(this->ptr);
+
+    int power = (int)(pow(2, globalRank)); // akollias this is so that every rank has different base for mod
+    for (int i = 0; i < numElements; i++)
+    {
+      int    valueI = (globalRank + i) % (256/power);
+      double valueF = 1.0L/((double)valueI+1.0L);
+      temp.Set(dataType, i, valueI, valueF);
+    }
+
+    // If this is GPU memory, copy from CPU temp buffer
+    if (isGpuMem)
+    {
+      if (hipMemcpy(this->ptr, temp.ptr, numBytes, hipMemcpyHostToDevice) != hipSuccess)
+      {
+        ERROR("Unable to fill input with pattern for rank %d\n", globalRank);
+        return TEST_FAIL;
+      }
+      temp.FreeCpuMem();
+    }
+
+    return TEST_SUCCESS;
+  }
+
   ErrCode PtrUnion::Set(ncclDataType_t const dataType, int const idx, int valueI, double valueF)
   {
     switch (dataType)

@@ -56,6 +56,11 @@ namespace RcclUnitTesting
                         int            const globalRank,
                         bool           const isGpuMem);
 
+    ErrCode FillPatternSR(ncclDataType_t const dataType,
+                        size_t         const numElements,
+                        int            const globalRank,
+                        bool           const isGpuMem);
+
     ErrCode Set(ncclDataType_t const dataType, int const idx, int valueI, double valueF);
     ErrCode Get(ncclDataType_t const dataType, int const idx, int& valueI, double& valueF) const;
 

@@ -23,7 +23,7 @@ namespace RcclUnitTesting
     case ncclCollGather:        return DefaultPrepData_Gather(collArgs, false);
     case ncclCollScatter:       return DefaultPrepData_Scatter(collArgs);
     case ncclCollAllToAll:      return DefaultPrepData_AllToAll(collArgs);
-    case ncclCollSendRecv:      return DefaultPrepData_SendRecv(collArgs); // akollias
+    case ncclCollSend:          return DefaultPrepData_SendRecv(collArgs); // akollias
     default:
       ERROR("Unknown func type %d\n", collArgs.funcType);
       return TEST_FAIL;
@@ -345,36 +345,26 @@ namespace RcclUnitTesting
     CHECK_CALL(CheckAllocation(collArgs));
     if (collArgs.numInputElements != collArgs.numOutputElements)
     {
-      ERROR("Number of input elements must match number of output elements for AllToAll\n");
+      ERROR("Number of input elements must match number of output elements for Broadcast\n");
       return TEST_FAIL;
     }
-    if (collArgs.numInputElements % collArgs.totalRanks)
-    {
-      ERROR("Input / Output size for AllToAll must be a multiple of %d\n", collArgs.totalRanks);
-      return TEST_FAIL;
-    }
-    size_t const numInputBytes = collArgs.numInputElements * DataTypeToBytes(collArgs.dataType);
-    size_t const numOutputBytes = collArgs.numOutputElements * DataTypeToBytes(collArgs.dataType);
-    size_t const numBytes = numInputBytes / collArgs.totalRanks;
 
-    // Clear outputs on all ranks (prior to input in case of in-place)
-    collArgs.outputGpu.ClearGpuMem(numOutputBytes);
+    size_t const numBytes = collArgs.numInputElements * DataTypeToBytes(collArgs.dataType);
 
-    // Generate input on root rank - each rank will receive a portion
-    PtrUnion tempInput;
-    tempInput.Attach(collArgs.outputCpu);
+    // Clear output for all ranks (done before filling input in case of in-place)
+    CHECK_CALL(collArgs.outputGpu.ClearGpuMem(numBytes));
 
-    for (int rank = 0; rank < collArgs.totalRanks; ++rank)
-    {
-      tempInput.FillPattern(collArgs.dataType, collArgs.numInputElements, rank, false);
+    // Only root needs input pattern
+    if (collArgs.globalRank == collArgs.root)
+      CHECK_CALL(collArgs.inputGpu.FillPatternSR(collArgs.dataType,
+                                               collArgs.numInputElements,
+                                               collArgs.root, true));
 
-      // Copy input
-      if (rank == collArgs.globalRank)
-      {
-        CHECK_HIP(hipMemcpy(collArgs.inputGpu.ptr, tempInput.ptr, numInputBytes, hipMemcpyHostToDevice));
-      }
-      memcpy(collArgs.expected.U1 + (numBytes * rank), tempInput.U1 + (numBytes * collArgs.globalRank), numBytes);
-    }
-    return TEST_SUCCESS;
+    // Otherwise all other ranks expected output is the same as input of root
+    // akollias in this case we want the recv rank
+    return collArgs.expected.FillPatternSR(collArgs.dataType,
+                                         collArgs.numInputElements,
+                                         collArgs.root,
+                                         false);
   }
 }
