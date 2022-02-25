@@ -277,6 +277,7 @@ namespace RcclUnitTesting
     return (funcType == ncclCollBroadcast ||
             funcType == ncclCollReduce    ||
             funcType == ncclCollGather    ||
-            funcType == ncclCollScatter);
+            funcType == ncclCollScatter   ||
+            funcType == ncclCollSend); // this is incorrect but it works because in Send root is not root it is the peer
   }
 }

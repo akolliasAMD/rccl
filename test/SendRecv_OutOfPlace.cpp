@@ -16,7 +16,7 @@ namespace RcclUnitTesting
     std::vector<ncclFunc_t>     const  funcType        = {ncclCollSend, ncclCollRecv}; // akollias
     // simple send receive test would check that communication is going for rank a to rank b
     // you need to do send and receive without caring about redOps, but care about just data...
-    std::vector<ncclDataType_t> const& dataTypes       = {ncclFloat};
+    std::vector<ncclDataType_t> const& dataTypes       = {ncclInt32};
     std::vector<ncclRedOp_t>    const& redOps          = {ncclSum}; //Not important for send receive tests
     std::vector<int>            const  numElements     = {1024}; // akollias, one test for now
     // std::vector<int>            const  numElements     = {1048576, 53327, 1024};
@@ -53,24 +53,23 @@ namespace RcclUnitTesting
         { // so root needs the recv number, and recv gpu needs the root rank
           if (currentRank != root)
           {
-            testBed.SetCollectiveArgs(funcType[0], //send here
-                                    dataTypes[dataIdx],
-                                    redOps[0], // akollias instead of redops ??
-                                    currentRank,
-                                    numElements[0], 
-                                    numElements[0],
-                                    0,
-                                    root); // akollias this will be the rank to send or receive.....
+            testBed.SetCollectiveArgs(funcType[0],
+                                      dataTypes[dataIdx],
+                                      redOps[0],
+                                      currentRank,
+                                      numElements[0],
+                                      numElements[0],
+                                      0,
+                                      root);
 
-            testBed.SetCollectiveArgs(funcType[1], // rec here
-                                    dataTypes[dataIdx],
-                                    redOps[0], // akollias instead of redops ??
-                                    root,
-                                    numElements[0], 
-                                    numElements[0],
-                                    0,
-                                    currentRank); // akollias this will be the rank to send or receive.....
-
+            testBed.SetCollectiveArgs(funcType[1],
+                                      dataTypes[dataIdx],
+                                      redOps[0],
+                                      root,
+                                      numElements[0],
+                                      numElements[0],
+                                      0,
+                                      currentRank);
           }
         }
         testBed.AllocateMem(inPlace, useManagedMem);

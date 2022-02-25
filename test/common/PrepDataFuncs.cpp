@@ -23,7 +23,8 @@ namespace RcclUnitTesting
     case ncclCollGather:        return DefaultPrepData_Gather(collArgs, false);
     case ncclCollScatter:       return DefaultPrepData_Scatter(collArgs);
     case ncclCollAllToAll:      return DefaultPrepData_AllToAll(collArgs);
-    case ncclCollSend:          return DefaultPrepData_SendRecv(collArgs); // akollias
+    case ncclCollSend:          return DefaultPrepData_Send(collArgs);
+    case ncclCollRecv:          return DefaultPrepData_Recv(collArgs);
     default:
       ERROR("Unknown func type %d\n", collArgs.funcType);
       return TEST_FAIL;
@@ -340,28 +341,31 @@ namespace RcclUnitTesting
     return TEST_SUCCESS;
   }
 
-  ErrCode DefaultPrepData_SendRecv(CollectiveArgs &collArgs)
+  ErrCode DefaultPrepData_Send(CollectiveArgs &collArgs)
   {
+
     CHECK_CALL(CheckAllocation(collArgs));
     if (collArgs.numInputElements != collArgs.numOutputElements)
     {
       ERROR("Number of input elements must match number of output elements for Broadcast\n");
       return TEST_FAIL;
     }
-
     size_t const numBytes = collArgs.numInputElements * DataTypeToBytes(collArgs.dataType);
-
-    // Clear output for all ranks (done before filling input in case of in-place)
-    CHECK_CALL(collArgs.outputGpu.ClearGpuMem(numBytes));
-
-    // Only root needs input pattern
-    if (collArgs.globalRank == collArgs.root)
-      CHECK_CALL(collArgs.inputGpu.FillPatternSR(collArgs.dataType,
+      return collArgs.inputGpu.FillPatternSR(collArgs.dataType,
                                                collArgs.numInputElements,
-                                               collArgs.root, true));
+                                               collArgs.globalRank, true);
+  }
 
-    // Otherwise all other ranks expected output is the same as input of root
-    // akollias in this case we want the recv rank
+  ErrCode DefaultPrepData_Recv(CollectiveArgs &collArgs)
+  {
+
+    CHECK_CALL(CheckAllocation(collArgs));
+    if (collArgs.numInputElements != collArgs.numOutputElements)
+    {
+      ERROR("Number of input elements must match number of output elements for Broadcast\n");
+      return TEST_FAIL;
+    }
+    size_t const numBytes = collArgs.numInputElements * DataTypeToBytes(collArgs.dataType);
     return collArgs.expected.FillPatternSR(collArgs.dataType,
                                          collArgs.numInputElements,
                                          collArgs.root,

@@ -24,7 +24,6 @@ namespace RcclUnitTesting
     ncclCollAllToAll,
     ncclCollSend,
     ncclCollRecv,
-    ncclCollSendRecv, // akollias probably dont need that
     ncclNumFuncs
   } ncclFunc_t;
 
