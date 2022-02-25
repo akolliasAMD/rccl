@@ -345,13 +345,7 @@ namespace RcclUnitTesting
   {
 
     CHECK_CALL(CheckAllocation(collArgs));
-    if (collArgs.numInputElements != collArgs.numOutputElements)
-    {
-      ERROR("Number of input elements must match number of output elements for Broadcast\n");
-      return TEST_FAIL;
-    }
-    size_t const numBytes = collArgs.numInputElements * DataTypeToBytes(collArgs.dataType);
-      return collArgs.inputGpu.FillPatternSR(collArgs.dataType,
+    return collArgs.inputGpu.FillPattern(collArgs.dataType,
                                                collArgs.numInputElements,
                                                collArgs.globalRank, true);
   }
@@ -360,13 +354,7 @@ namespace RcclUnitTesting
   {
 
     CHECK_CALL(CheckAllocation(collArgs));
-    if (collArgs.numInputElements != collArgs.numOutputElements)
-    {
-      ERROR("Number of input elements must match number of output elements for Broadcast\n");
-      return TEST_FAIL;
-    }
-    size_t const numBytes = collArgs.numInputElements * DataTypeToBytes(collArgs.dataType);
-    return collArgs.expected.FillPatternSR(collArgs.dataType,
+    return collArgs.expected.FillPattern(collArgs.dataType,
                                          collArgs.numInputElements,
                                          collArgs.root,
                                          false);

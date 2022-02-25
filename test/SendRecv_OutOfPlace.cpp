@@ -20,7 +20,7 @@ namespace RcclUnitTesting
     std::vector<ncclRedOp_t>    const& redOps          = {ncclSum}; //Not important for send receive tests
     std::vector<int>            const  numElements     = {1024}; // akollias, one test for now
     // std::vector<int>            const  numElements     = {1048576, 53327, 1024};
-    int                         const  root            = 0;
+    // int                         const  root            = 0;
     bool                        const  inPlace         = false;
     bool                        const  useManagedMem   = false;
     int                         const  numCollPerGroup = numElements.size();
@@ -28,7 +28,7 @@ namespace RcclUnitTesting
     // CollFuncPtr prepFunc = DefaultPrepData_SendRecv; // akollias
     bool isCorrect = true;
     // for (int totalRanks = testBed.ev.minGpus; totalRanks <= testBed.ev.maxGpus && isCorrect; ++totalRanks) // big iterator for all ranks
-    int totalRanks = 2; // akollias this to change on maxGpus
+    int totalRanks = testBed.ev.maxGpus; // akollias this to change on maxGpus
     // for (int isMultiProcess = 0; isMultiProcess <= 1 && isCorrect; ++isMultiProcess) // akollias disable multi process in the beggining enable after
     // { // akollias multiprocess
       // Test either single process all GPUs, or 1 process per GPU
@@ -48,35 +48,40 @@ namespace RcclUnitTesting
 
         // Run all element sizes in parallel as single group // akollias for now this will only run for one test
         // for (int collIdx = 0; collIdx < numCollPerGroup; ++collIdx) // akollias for now we are removing differnt collectives, we need just specfically with every rank
+        for (int root = 0; root < totalRanks; ++root)
+        {
+          for (int currentRank = 0; currentRank < totalRanks; ++currentRank)
+          { // so root needs the recv number, and recv gpu needs the root rank
 
-        for (int currentRank = 0; currentRank < totalRanks; ++currentRank)
-        { // so root needs the recv number, and recv gpu needs the root rank
-          if (currentRank != root)
-          {
-            testBed.SetCollectiveArgs(funcType[0],
-                                      dataTypes[dataIdx],
-                                      redOps[0],
-                                      currentRank,
-                                      numElements[0],
-                                      numElements[0],
-                                      0,
-                                      root);
+            INFO("currentRank %d adn this is root: %d\n",currentRank, root); // akollias no Red_ops
+            if (currentRank != root)
+            {
+              testBed.SetCollectiveArgs(funcType[0],
+                                        dataTypes[dataIdx],
+                                        redOps[0],
+                                        currentRank,
+                                        numElements[0],
+                                        numElements[0],
+                                        0,
+                                        root);
 
-            testBed.SetCollectiveArgs(funcType[1],
-                                      dataTypes[dataIdx],
-                                      redOps[0],
-                                      root,
-                                      numElements[0],
-                                      numElements[0],
-                                      0,
-                                      currentRank);
+              testBed.SetCollectiveArgs(funcType[1],
+                                        dataTypes[dataIdx],
+                                        redOps[0],
+                                        root,
+                                        numElements[0],
+                                        numElements[0],
+                                        0,
+                                        currentRank);
+              testBed.AllocateMem(inPlace, useManagedMem);
+              testBed.PrepareData();
+              testBed.ExecuteCollectives();
+              testBed.ValidateResults(isCorrect);
+              testBed.DeallocateMem();
+            }
+
           }
         }
-        testBed.AllocateMem(inPlace, useManagedMem);
-        testBed.PrepareData(); // Default prep RecSend might work
-        testBed.ExecuteCollectives();
-        testBed.ValidateResults(isCorrect);
-        testBed.DeallocateMem();
       }
       testBed.DestroyComms();
     // } // akollias multiprocess
