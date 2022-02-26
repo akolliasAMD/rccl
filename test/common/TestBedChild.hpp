@@ -65,6 +65,7 @@ namespace RcclUnitTesting
     std::vector<int> deviceIds;                         // Device IDs for each rank
     std::vector<hipStream_t> streams;                   // Streams for executing collectives
     std::vector<std::vector<CollectiveArgs>> collArgs;  // Info for each collective for each rank
+    // std::vector<int> currentRanks;                      // ranks for current collective trest (added when you set collectives, removed when you deallocate mem)
 
     // Constructor
     TestBedChild(int const childId, bool const verbose, int const printValues);

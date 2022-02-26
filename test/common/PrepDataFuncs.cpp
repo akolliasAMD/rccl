@@ -343,7 +343,6 @@ namespace RcclUnitTesting
 
   ErrCode DefaultPrepData_Send(CollectiveArgs &collArgs)
   {
-
     CHECK_CALL(CheckAllocation(collArgs));
     return collArgs.inputGpu.FillPattern(collArgs.dataType,
                                                collArgs.numInputElements,
@@ -352,7 +351,6 @@ namespace RcclUnitTesting
 
   ErrCode DefaultPrepData_Recv(CollectiveArgs &collArgs)
   {
-
     CHECK_CALL(CheckAllocation(collArgs));
     return collArgs.expected.FillPattern(collArgs.dataType,
                                          collArgs.numInputElements,

@@ -261,7 +261,7 @@ namespace RcclUnitTesting
     {
       if (collId == -1 || collId == collIdx)
       {
-	CollectiveArgs& collArg = this->collArgs[localRank][collIdx];
+	   CollectiveArgs& collArg = this->collArgs[localRank][collIdx];
         CHECK_CALL(collArg.AllocateMem(inPlace, useManagedMem));
         if (this->verbose) INFO("Rank %d on child %d allocates memory for collective %d on device %d (%s,%s) Input: %p Output %p\n",
                                 globalRank, this->childId, collIdx, this->deviceIds[localRank],
@@ -314,6 +314,14 @@ namespace RcclUnitTesting
 
   ErrCode TestBedChild::ExecuteCollectives()
   {
+    int rankListSize, tempRank;
+    std::vector<int> rankList = {};
+    PIPE_READ(rankListSize);
+
+    for (int rank = 0; rank < rankListSize; ++rank){
+      PIPE_READ(tempRank);
+      rankList.push_back(tempRank);
+    }
     if (this->verbose) INFO("Child %d begins ExecuteCollectives()\n", this->childId);
 
     // Start group call
@@ -325,6 +333,9 @@ namespace RcclUnitTesting
       // Loop over all local ranks
       for (int localRank = 0; localRank < this->deviceIds.size(); ++localRank)
       {
+
+        if (std::count(rankList.begin(), rankList.end(), localRank) == 0) continue;
+
         CHECK_HIP(hipSetDevice(this->deviceIds[localRank]));
 
         CollectiveArgs const& collArg = this->collArgs[localRank][collId];

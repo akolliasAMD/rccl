@@ -29,6 +29,7 @@ namespace RcclUnitTesting
     bool isCorrect = true;
     // for (int totalRanks = testBed.ev.minGpus; totalRanks <= testBed.ev.maxGpus && isCorrect; ++totalRanks) // big iterator for all ranks
     int totalRanks = testBed.ev.maxGpus; // akollias this to change on maxGpus
+    // int totalRanks = 2; // akollias this to change on maxGpus
     // for (int isMultiProcess = 0; isMultiProcess <= 1 && isCorrect; ++isMultiProcess) // akollias disable multi process in the beggining enable after
     // { // akollias multiprocess
       // Test either single process all GPUs, or 1 process per GPU
@@ -47,13 +48,22 @@ namespace RcclUnitTesting
                totalRanks, ncclDataTypeNames[dataTypes[dataIdx]]); // akollias no Red_ops
 
         // Run all element sizes in parallel as single group // akollias for now this will only run for one test
-        // for (int collIdx = 0; collIdx < numCollPerGroup; ++collIdx) // akollias for now we are removing differnt collectives, we need just specfically with every rank
+        // for (int collIdx = 0; collIdx < numCollPerGroup; ++collIdx) // akollias for now we are removing differnt collectives
         for (int root = 0; root < totalRanks; ++root)
         {
+          testBed.SetCollectiveArgs(funcType[0],
+                                    dataTypes[dataIdx],
+                                    redOps[0],
+                                    0, // 0?
+                                    numElements[0],
+                                    numElements[0],
+                                    0,
+                                    root);
+          testBed.AllocateMem(inPlace, useManagedMem, -1, root); // need to have rank
+          testBed.PrepareData(-1, root); // need to have rank
           for (int currentRank = 0; currentRank < totalRanks; ++currentRank)
           { // so root needs the recv number, and recv gpu needs the root rank
 
-            INFO("currentRank %d adn this is root: %d\n",currentRank, root); // akollias no Red_ops
             if (currentRank != root)
             {
               testBed.SetCollectiveArgs(funcType[0],
@@ -73,14 +83,18 @@ namespace RcclUnitTesting
                                         numElements[0],
                                         0,
                                         currentRank);
-              testBed.AllocateMem(inPlace, useManagedMem);
-              testBed.PrepareData();
-              testBed.ExecuteCollectives();
-              testBed.ValidateResults(isCorrect);
-              testBed.DeallocateMem();
+              testBed.AllocateMem(inPlace, useManagedMem, -1, currentRank); // need to have currentRank
+              testBed.PrepareData(-1, currentRank); // need to have currentRank
+              testBed.ExecuteCollectives({root,currentRank});// specifically for all of them // need to have currentRank
+              // testBed.ExecuteCollectives();// specifically for all of them // need to have currentRank
+              testBed.ValidateResults(isCorrect, -1, currentRank); // need to have currentRank
+              testBed.DeallocateMem(-1, currentRank); // need to have currentRank
+              // testBed.DestroyComms();
             }
 
           }
+          // testBed.ValidateResults(isCorrect, -1, root); // need to have root
+          testBed.DeallocateMem(-1, root); // need to have root
         }
       }
       testBed.DestroyComms();
