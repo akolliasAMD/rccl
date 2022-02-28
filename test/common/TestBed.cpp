@@ -223,8 +223,7 @@ namespace RcclUnitTesting
   void TestBed::ExecuteCollectives(std::vector<int> const &currentRanks)
   {
     int const cmd = TestBedChild::CHILD_EXECUTE_COLL;
-    ++TestBed::NumTestsRun();
-
+    if (currentRanks.empty() || (currentRanks.size() > 1)) ++TestBed::NumTestsRun(); // this wont be accurate on the case of multiple children running send or receive
     // Send ExecuteColl command to each active child process
     for (int childId = 0; childId < this->numActiveChildren; ++childId)
     {
