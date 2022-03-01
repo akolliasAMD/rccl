@@ -261,7 +261,7 @@ namespace RcclUnitTesting
     {
       if (collId == -1 || collId == collIdx)
       {
-	   CollectiveArgs& collArg = this->collArgs[localRank][collIdx];
+        CollectiveArgs& collArg = this->collArgs[localRank][collIdx];
         CHECK_CALL(collArg.AllocateMem(inPlace, useManagedMem));
         if (this->verbose) INFO("Rank %d on child %d allocates memory for collective %d on device %d (%s,%s) Input: %p Output %p\n",
                                 globalRank, this->childId, collIdx, this->deviceIds[localRank],

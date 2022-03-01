@@ -16,7 +16,7 @@ namespace RcclUnitTesting
     std::vector<int>            const  numElements     = {1048576, 53327, 1024};
     bool                        const  inPlace         = false;
     bool                        const  useManagedMem   = false;
-    // SendRecv_AllPairs true or false?
+
     int numCollPerGroup = 0;
     bool isCorrect = true;
     int totalRanks = testBed.ev.maxGpus;
