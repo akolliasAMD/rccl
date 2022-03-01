@@ -335,7 +335,6 @@ namespace RcclUnitTesting
       {
         // If ranks to execute is empty, execute all ranks belonging to child
         if (!ranksToExecute.empty() && (std::count(ranksToExecute.begin(), ranksToExecute.end(), localRank) == 0)) continue;
-
         CHECK_HIP(hipSetDevice(this->deviceIds[localRank]));
 
         CollectiveArgs const& collArg = this->collArgs[localRank][collId];
