@@ -12,18 +12,18 @@ namespace RcclUnitTesting
     TestBed testBed;
 
     // Configuration
-    std::vector<ncclDataType_t> const& dataTypes       = {ncclInt32, ncclFloat64};
-    std::vector<int>            const  numElements     = {1048576, 53327, 1024};
+    std::vector<ncclDataType_t> const& dataTypes       = {ncclInt32}; // {ncclInt32, ncclFloat64};
+    std::vector<int>            const  numElements     = {1024}; // {1048576, 53327, 1024};
     bool                        const  inPlace         = false;
     bool                        const  useManagedMem   = false;
 
     int numCollPerGroup = 0;
     bool isCorrect = true;
     int totalRanks = testBed.ev.maxGpus;
-    for (int isMultiProcess = 0; isMultiProcess <= 1 && isCorrect; ++isMultiProcess)
+    for (int isMultiProcess = 0; isMultiProcess <= 1 && isCorrect; ++isMultiProcess) // CHANGE TO SINGLE
     {
       int const numProcesses = isMultiProcess ? totalRanks : 1;
-      testBed.InitComms(TestBed::GetDeviceIdsList(numProcesses, totalRanks), 0);
+      testBed.InitComms(TestBed::GetDeviceIdsList(numProcesses, totalRanks), 1);
 
       for (int dataIdx = 0; dataIdx < dataTypes.size() && isCorrect; ++dataIdx)
       {

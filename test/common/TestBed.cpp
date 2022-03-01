@@ -223,7 +223,17 @@ namespace RcclUnitTesting
   void TestBed::ExecuteCollectives(std::vector<int> const &currentRanks)
   {
     int const cmd = TestBedChild::CHILD_EXECUTE_COLL;
-    if (currentRanks.empty() || (currentRanks.size() > 1)) ++TestBed::NumTestsRun(); // this wont be accurate on the case of multiple children running send or receive
+    ++TestBed::NumTestsRun();
+    //This doesn't look quite right. Generally, we are passing global rank ids to children, but only to the children that own that global rank.
+    //Each child should receive a different number of global rank ids.
+    //Will see what is a good way to do that. Only good thing with this is that you dont need testbed to know which child is dealing with which rank.
+    //But will change it
+    // for loop in currentRanks
+    //       execute and send all to ranks to child
+    // for (int rank = 0; rank < currentRanks.size(); ++rank){
+    //   int childId =  rankToChildMap[rank];
+    // }
+    // int const childId = rankToChildMap[currRank];
     // Send ExecuteColl command to each active child process
     for (int childId = 0; childId < this->numActiveChildren; ++childId)
     {
