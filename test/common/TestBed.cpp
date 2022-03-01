@@ -225,19 +225,15 @@ namespace RcclUnitTesting
     int const cmd = TestBedChild::CHILD_EXECUTE_COLL;
     ++TestBed::NumTestsRun();
 
-    std::vector<std::vector<int>> childToRankMap;
-    for (int childId = 0; childId < this->numActiveChildren; ++childId)
-    {
-      childToRankMap.push_back({});
-    }
+    std::vector<std::vector<int>> ranksPerChild(this->numActiveChildren);
     for (int rank = 0; rank < currentRanks.size(); ++rank)
     {
-      childToRankMap[rankToChildMap[currentRanks[rank]]].push_back(rank);
+      ranksPerChild[rankToChildMap[currentRanks[rank]]].push_back(rank);
     }
 
     for (int childId = 0; childId < this->numActiveChildren; ++childId)
     {
-      if ((currentRanks.size() == 0) || (childToRankMap[childId].size() > 0))
+      if ((currentRanks.size() == 0) || (ranksPerChild[childId].size() > 0))
       {
         PIPE_WRITE(childId, cmd);
         int tempCurrentRanks = currentRanks.size();
@@ -250,7 +246,7 @@ namespace RcclUnitTesting
     // Wait for child acknowledgement
     for (int childId = 0; childId < this->numActiveChildren; ++childId)
     {
-      if ((currentRanks.size() == 0) || (childToRankMap[childId].size() > 0)) PIPE_CHECK(childId);
+      if ((currentRanks.size() == 0) || (ranksPerChild[childId].size() > 0)) PIPE_CHECK(childId);
     }
   }
 

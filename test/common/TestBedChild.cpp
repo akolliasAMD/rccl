@@ -314,11 +314,11 @@ namespace RcclUnitTesting
 
   ErrCode TestBedChild::ExecuteCollectives()
   {
-    int ranksToExecuteSize, tempRank;
+    int numRanksToExecute, tempRank;
     std::vector<int> ranksToExecute = {};
-    PIPE_READ(ranksToExecuteSize);
+    PIPE_READ(numRanksToExecute);
 
-    for (int rank = 0; rank < ranksToExecuteSize; ++rank){
+    for (int rank = 0; rank < numRanksToExecute; ++rank){
       PIPE_READ(tempRank);
       ranksToExecute.push_back(tempRank - this->rankOffset);
     }
