@@ -69,7 +69,6 @@ namespace RcclUnitTesting
         return TEST_FAIL;
       }
     }
-    ERROR("AllocateCpuMem %p\n", this->ptr);
     return TEST_SUCCESS;
   }
 

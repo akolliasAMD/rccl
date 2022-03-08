@@ -29,8 +29,6 @@ namespace RcclUnitTesting
     bool isCorrect = true;
     int totalRanks = testBed.ev.maxGpus;
 
-//Create send receive  arrays (create send, fix the rest)
-//tests: remove the sendrank receive rank loop
     //data prep needs to take into consideration sdispl and r displ (mostly rdispl)
     //Allocate mem too will need send receive (maybe i can add a function to the struct, it is the sum of all things) (EVERY TIME THE COLLECTIVE IS CALLED IT IS CALLED WITH RANK MEM)
 
@@ -58,10 +56,10 @@ namespace RcclUnitTesting
       numInputElements[root] = sdispls[(root+ 1)*totalRanks - 1] + sendcounts[(root+ 1)*totalRanks - 1];
       numOutputElements[root] = rdispls[(root+ 1)*totalRanks - 1] + recvcounts[(root+ 1)*totalRanks - 1];
     }
-    for (int root = 0; root < totalRanks; ++root)
-    {
-      ERROR("%lu send, %lu Receive, %d rank\n", numInputElements[root], numOutputElements[root], root);
-    }
+    // for (int root = 0; root < totalRanks; ++root)
+    // {
+    //   INFO("%lu send, %lu Receive, %d rank\n", numInputElements[root], numOutputElements[root], root);
+    // }
 
 
     for (int isMultiProcess = 0; isMultiProcess <= 0 && isCorrect; ++isMultiProcess) //akollias change to one should be fine
@@ -91,8 +89,7 @@ namespace RcclUnitTesting
                                   numInputElements,
                                   numOutputElements);
         testBed.AllocateMem(inPlace, useManagedMem);
-        ERROR("this will only appear once (test file)\n");
-        testBed.PrepareData();
+        testBed.PrepareData(); // fails in here
         testBed.ExecuteCollectives();
         testBed.ValidateResults(isCorrect);
         testBed.DeallocateMem();
