@@ -84,7 +84,7 @@ namespace RcclUnitTesting
     this->numOutputElementsAllocated = this->numOutputElements;
     this->inPlace                    = inPlace;
     this->useManagedMem              = useManagedMem;
-    ERROR("inside gpu: Device %d, input: %lu, output %lu\n", this->deviceId,  this->numInputElements, this->numOutputElements);
+
     if (hipSetDevice(this->deviceId) != hipSuccess)
     {
       ERROR("Unable to call hipSetDevice to set to GPU %d\n", this->deviceId);

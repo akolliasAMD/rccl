@@ -210,9 +210,6 @@ namespace RcclUnitTesting
       PIPE_READ(numInputElements);
       PIPE_READ(numOutputElements);
     }
-        INFO(" AllToAllv child input output %lu\n", numInputElements);
-    INFO(" AllToAllv child input output %lu\n", numOutputElements);
-
     if (globalRank < this->rankOffset || (this->rankOffset + comms.size() <= globalRank))
     {
       ERROR("Child %d does not contain rank %d\n", this->childId, globalRank);

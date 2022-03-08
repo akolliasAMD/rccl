@@ -344,42 +344,31 @@ namespace RcclUnitTesting
 
   ErrCode DefaultPrepData_AllToAllv(CollectiveArgs &collArgs) //AKOLLIAS Change based on displacement (go through the the number while going throuhgh send (call fillpattern rank times))
   {
-    INFO(" AllToAllv must rank %d\n", collArgs.globalRank);
     CHECK_CALL(CheckAllocation(collArgs));
     size_t const numInputBytes = collArgs.numInputElements * DataTypeToBytes(collArgs.dataType);
     size_t const numOutputBytes = collArgs.numOutputElements * DataTypeToBytes(collArgs.dataType);
     size_t const maxBytes = 2000000; // add it somewhere else or just take the proper number of numElemnts
     // Clear outputs on all ranks (prior to input in case of in-place)
 
-    INFO(" AllToAllv inside loop after fill %lu\n", numOutputBytes);
     collArgs.outputGpu.ClearGpuMem(numOutputBytes);
-    INFO(" AllToAllv inside loop after fill %d\n", collArgs.globalRank);
     // Generate input on root rank - each rank will receive a portion
     PtrUnion tempInput;
     tempInput.Attach(collArgs.outputCpu);
-    INFO(" AllToAllv inside loop after fill %d\n", collArgs.globalRank);
     tempInput.FillPattern(collArgs.dataType, collArgs.numInputElements, collArgs.globalRank, false);
     CHECK_HIP(hipMemcpy(collArgs.inputGpu.ptr, tempInput.ptr, numInputBytes, hipMemcpyHostToDevice));
     PtrUnion tempExpected;
     tempExpected.AllocateCpuMem(maxBytes);
-    INFO(" AllToAllv must rank %d total : %d\n", collArgs.globalRank, collArgs.totalRanks);
     for (int rank = 0; rank < collArgs.totalRanks; ++rank)
     {
 
-    INFO(" AllToAllv inside loop after fill %d\n", rank);
       tempExpected.FillPattern(collArgs.dataType, maxBytes, rank, false); //collArgs.numInputElements this should be the max of all?
 
-    INFO(" AllToAllv inside after fill on tempExpected %d\n", rank);
       size_t recvDspls = collArgs.optionalArgs.rdispls[collArgs.globalRank*collArgs.totalRanks + rank] * DataTypeToBytes(collArgs.dataType);
       size_t rankDspls = collArgs.optionalArgs.sdispls[rank*collArgs.totalRanks + collArgs.globalRank] * DataTypeToBytes(collArgs.dataType);
       size_t numBytes = collArgs.optionalArgs.recvcounts[collArgs.globalRank*collArgs.totalRanks + rank] * DataTypeToBytes(collArgs.dataType);
-
-    INFO(" AllToAllv must recv %lu, rankDspls: %lu, numbytes: %lu\n", recvDspls, rankDspls, numBytes);
       memcpy(collArgs.expected.U1 + recvDspls, tempExpected.U1 + rankDspls, numBytes);
-      ERROR(" memcopy %d\n", rank);
     }
-    //tempExpected.FreeCpuMem();
-          INFO(" free %d\n", collArgs.globalRank);
+    tempExpected.FreeCpuMem();
     return TEST_SUCCESS;
   }
 

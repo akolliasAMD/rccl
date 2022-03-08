@@ -42,8 +42,8 @@ namespace RcclUnitTesting
           if (recvRank == 0)
           {
 
-            testBed.AllocateMem(inPlace, useManagedMem, 0, sendRank);
-            testBed.PrepareData(0, sendRank);
+            testBed.AllocateMem(inPlace, useManagedMem, -1, sendRank);
+            testBed.PrepareData(-1, sendRank);
           }
           if (recvRank  != sendRank)
           {
@@ -64,14 +64,14 @@ namespace RcclUnitTesting
                                       numElements[numIdx],
                                       0,
                                       recvRank);
-            testBed.AllocateMem(inPlace, useManagedMem, 0, recvRank);
-            testBed.PrepareData(0, recvRank);
+            testBed.AllocateMem(inPlace, useManagedMem, -1, recvRank);
+            testBed.PrepareData(-1, recvRank);
             testBed.ExecuteCollectives({sendRank,recvRank });
-            testBed.ValidateResults(isCorrect, 0, recvRank);
-            testBed.DeallocateMem(0, recvRank);
+            testBed.ValidateResults(isCorrect, -1, recvRank);
+            testBed.DeallocateMem(-1, recvRank);
           }
         }
-        testBed.DeallocateMem(0, sendRank);
+        testBed.DeallocateMem(-1, sendRank);
       }
       testBed.DestroyComms();
     }

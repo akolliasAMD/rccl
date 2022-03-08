@@ -185,7 +185,6 @@ namespace RcclUnitTesting
           PIPE_WRITE(childId, recvcounts[i]);
           PIPE_WRITE(childId, rdispls[i]);
         }
-        ERROR("%lu numInputElementsArray %lu numOutpat %d rank \n", numInputElementsArray[currRank], numOutputElementsArray[currRank], currRank);
         PIPE_WRITE(childId, numInputElementsArray[currRank]);
         PIPE_WRITE(childId, numOutputElementsArray[currRank]);
       }

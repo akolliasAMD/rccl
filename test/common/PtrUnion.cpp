@@ -60,7 +60,6 @@ namespace RcclUnitTesting
 
   ErrCode PtrUnion::AllocateCpuMem(size_t const numBytes)
   {
-    // ERROR("AllocateCpuMem %lu\n", numBytes);
     if (numBytes)
     {
       this->ptr = calloc(numBytes, 1);
@@ -70,6 +69,7 @@ namespace RcclUnitTesting
         return TEST_FAIL;
       }
     }
+    ERROR("AllocateCpuMem %p\n", this->ptr);
     return TEST_SUCCESS;
   }
 
