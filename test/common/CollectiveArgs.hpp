@@ -22,6 +22,7 @@ namespace RcclUnitTesting
     ncclCollGather,
     ncclCollScatter,
     ncclCollAllToAll,
+    ncclCollAllToAllv,
     ncclCollSend,
     ncclCollRecv,
     ncclNumFuncs
@@ -37,6 +38,7 @@ namespace RcclUnitTesting
     "Gather",
     "Scatter",
     "AllToAll",
+    "AllToAllv",
     "Send",
     "Recv"
   };
@@ -72,6 +74,19 @@ namespace RcclUnitTesting
     char ptr[MAX_RANKS * sizeof(double)];
   };
 
+  struct OptionalColArgs
+  { // AKOLLIAS
+    // add scalar transport, scalar mode,
+
+    // allToAllv args
+    size_t sendcounts[MAX_RANKS*MAX_RANKS];
+    size_t sdispls[MAX_RANKS*MAX_RANKS];
+    size_t recvcounts[MAX_RANKS*MAX_RANKS];
+    size_t rdispls[MAX_RANKS*MAX_RANKS];
+
+  };
+
+
   // Function pointer for functions that operate on CollectiveArgs
   // e.g. For filling input / computing expected results
   typedef ErrCode (*CollFuncPtr)(CollectiveArgs &);
@@ -92,6 +107,8 @@ namespace RcclUnitTesting
     ScalarTransport scalarTransport;   // Used for custom reduction operators
     PtrUnion        localScalar;
     int             scalarMode;        // -1 if scalar not used
+
+    OptionalColArgs optionalArgs;
 
     // Data
     PtrUnion       inputGpu;
@@ -116,7 +133,11 @@ namespace RcclUnitTesting
                     size_t          const numInputElements,
                     size_t          const numOutputElements,
                     ScalarTransport const scalarsPerRank,
-                    int             const scalarMode = -1);
+                    int             const scalarMode = -1,
+                    size_t*         const sendcounts = NULL,
+                    size_t*         const sdispls = NULL,
+                    size_t*         const recvcounts = NULL,
+                    size_t*         const rdispls = NULL);
 
     // Allocates GPU memory for input/output and CPU memory for expected
     // When inPlace is true, input and output share the same memory

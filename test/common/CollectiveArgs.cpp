@@ -19,7 +19,11 @@ namespace RcclUnitTesting
                                   size_t          const  numInputElements,
                                   size_t          const  numOutputElements,
                                   ScalarTransport const  scalarTransport,
-                                  int             const  scalarMode)
+                                  int             const  scalarMode,
+                                  size_t*         const  sendcounts,
+                                  size_t*         const  sdispls,
+                                  size_t*         const  recvcounts,
+                                  size_t*         const  rdispls)
   {
     // Free scalar based on previous scalarMode
     if (scalarMode != -1)
@@ -58,6 +62,16 @@ namespace RcclUnitTesting
         memcpy(this->localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes), numBytes);
       }
     }
+    if (funcType == ncclCollAllToAllv)
+    {
+      for (int i = 0; i < this->totalRanks*this->totalRanks; ++i)
+      {
+        this->optionalArgs.sendcounts[i] = sendcounts[i];
+        this->optionalArgs.sdispls[i] = sdispls[i];
+        this->optionalArgs.recvcounts[i] = recvcounts[i];
+        this->optionalArgs.rdispls[i] = rdispls[i];
+      }
+    }
     return TEST_SUCCESS;
   }
 
@@ -70,7 +84,7 @@ namespace RcclUnitTesting
     this->numOutputElementsAllocated = this->numOutputElements;
     this->inPlace                    = inPlace;
     this->useManagedMem              = useManagedMem;
-
+    ERROR("inside gpu: Device %d, input: %lu, output %lu\n", this->deviceId,  this->numInputElements, this->numOutputElements);
     if (hipSetDevice(this->deviceId) != hipSuccess)
     {
       ERROR("Unable to call hipSetDevice to set to GPU %d\n", this->deviceId);
@@ -174,6 +188,7 @@ namespace RcclUnitTesting
     case ncclCollGather:        ss << "ncclGather";        break;
     case ncclCollScatter:       ss << "ncclScatter";       break;
     case ncclCollAllToAll:      ss << "ncclAllToAll";      break;
+    case ncclCollAllToAllv:     ss << "ncclAllToAllv";     break;
     case ncclCollSend:          ss << "ncclSend";          break;
     case ncclCollRecv:          ss << "ncclRecv";          break;
     default:                    ss << "[Unknown]";         break;

@@ -50,7 +50,16 @@ namespace RcclUnitTesting
                            int            const collId = -1,
                            int            const rank = -1,
                            PtrUnion       const scalarsPerRank = {nullptr},
-                           int            const scalarMode = -1);
+                           int            const scalarMode = -1,
+                           size_t*        const sendcounts = nullptr, //akollias
+                           size_t*        const sdispls = nullptr,
+                           size_t*        const recvcounts = nullptr,
+                           size_t*        const rdispls = nullptr,
+                           size_t*        const numInputElementsArray = nullptr,
+                           size_t*        const numOutputElementsArray = nullptr);
+
+
+
 
     // Allocate memory for specified collective / rank
     // - Requires SetCollectiveArgs to have been called already

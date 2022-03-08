@@ -137,7 +137,13 @@ namespace RcclUnitTesting
                                   int            const collId,
                                   int            const rank,
                                   PtrUnion       const scalarsPerRank,
-                                  int            const scalarMode)
+                                  int            const scalarMode,
+                                  size_t*        const sendcounts,
+                                  size_t*        const sdispls,
+                                  size_t*        const recvcounts,
+                                  size_t*        const rdispls,
+                                  size_t*        const numInputElementsArray,
+                                  size_t*        const numOutputElementsArray)
   {
     // Build list of ranks this applies to (-1 for rank means to set for all)
     std::vector<int> rankList;
@@ -156,7 +162,7 @@ namespace RcclUnitTesting
 
     // Loop over all ranks and send CollectiveArgs to appropriate child process
     int const cmd = TestBedChild::CHILD_SET_COLL_ARGS;
-    for (auto currRank : rankList)
+    for (auto currRank : rankList) // akollias we need to also push the sendcounts, receive counts etc, if functype is alltoallv
     {
       int const childId = rankToChildMap[currRank];
       PIPE_WRITE(childId, cmd);
@@ -170,6 +176,21 @@ namespace RcclUnitTesting
       PIPE_WRITE(childId, numOutputElements);
       PIPE_WRITE(childId, scalarMode);
       PIPE_WRITE(childId, scalarTransport);
+      if (funcType == ncclCollAllToAllv)
+      {
+        for (int i = 0; i < this->numActiveRanks*this->numActiveRanks; ++i)
+        {
+          PIPE_WRITE(childId, sendcounts[i]);
+          PIPE_WRITE(childId, sdispls[i]);
+          PIPE_WRITE(childId, recvcounts[i]);
+          PIPE_WRITE(childId, rdispls[i]);
+        }
+        ERROR("%lu numInputElementsArray %lu numOutpat %d rank \n", numInputElementsArray[currRank], numOutputElementsArray[currRank], currRank);
+        PIPE_WRITE(childId, numInputElementsArray[currRank]);
+        PIPE_WRITE(childId, numOutputElementsArray[currRank]);
+      }
+
+
       PIPE_CHECK(childId);
     }
   }

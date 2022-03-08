@@ -177,6 +177,10 @@ namespace RcclUnitTesting
     size_t          numOutputElements;
     ScalarTransport scalarTransport;
     int             scalarMode;
+    size_t          sendcounts[MAX_RANKS];
+    size_t          sdispls[MAX_RANKS];
+    size_t          recvcounts[MAX_RANKS];
+    size_t          rdispls[MAX_RANKS];
 
     PIPE_READ(globalRank);
     PIPE_READ(collId);
@@ -193,6 +197,21 @@ namespace RcclUnitTesting
       PtrUnion scalarsPerRank;
       scalarsPerRank.Attach(scalarTransport.ptr);
     }
+
+    if (funcType == ncclCollAllToAllv)
+    {
+      for (int i = 0; i < this->totalRanks*this->totalRanks; ++i)
+      {
+        PIPE_READ(sendcounts[i]);
+        PIPE_READ(sdispls[i]);
+        PIPE_READ(recvcounts[i]);
+        PIPE_READ(rdispls[i]);
+      }
+      PIPE_READ(numInputElements);
+      PIPE_READ(numOutputElements);
+    }
+        INFO(" AllToAllv child input output %lu\n", numInputElements);
+    INFO(" AllToAllv child input output %lu\n", numOutputElements);
 
     if (globalRank < this->rankOffset || (this->rankOffset + comms.size() <= globalRank))
     {
@@ -211,7 +230,8 @@ namespace RcclUnitTesting
                                    this->deviceIds[localRank],
                                    funcType, dataType, redOp, root,
                                    numInputElements, numOutputElements,
-                                   scalarTransport, scalarMode));
+                                   scalarTransport, scalarMode,
+                                   sendcounts, sdispls, recvcounts, rdispls));
         if (this->verbose) INFO("Rank %d on child %d sets collective %d [%s]\n",
                                 globalRank, this->childId, collIdx,
                                 collArg.GetDescription().c_str());
@@ -437,6 +457,18 @@ namespace RcclUnitTesting
                                        this->comms[localRank],
                                        this->streams[localRank]),
                           "ncclAllToAll");
+          break;
+        case ncclCollAllToAllv: //akollias
+          CHILD_NCCL_CALL(ncclAllToAllv(collArg.inputGpu.ptr,
+                                        collArg.optionalArgs.sendcounts + localRank*this->totalRanks,
+                                        collArg.optionalArgs.sdispls + localRank*this->totalRanks,
+                                        collArg.outputGpu.ptr,
+                                        collArg.optionalArgs.recvcounts + localRank*this->totalRanks,
+                                        collArg.optionalArgs.rdispls + localRank*this->totalRanks,
+                                        collArg.dataType,
+                                        this->comms[localRank],
+                                        this->streams[localRank]),
+                          "ncclAllToAllv");
           break;
         case ncclCollSend:
           CHILD_NCCL_CALL(ncclSend(collArg.inputGpu.ptr,
