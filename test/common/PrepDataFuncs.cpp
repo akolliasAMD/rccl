@@ -344,30 +344,41 @@ namespace RcclUnitTesting
 
   ErrCode DefaultPrepData_AllToAllv(CollectiveArgs &collArgs) //AKOLLIAS Change based on displacement (go through the the number while going throuhgh send (call fillpattern rank times))
   {
+
     CHECK_CALL(CheckAllocation(collArgs));
     size_t const numInputBytes = collArgs.numInputElements * DataTypeToBytes(collArgs.dataType);
     size_t const numOutputBytes = collArgs.numOutputElements * DataTypeToBytes(collArgs.dataType);
-    size_t const maxBytes = 2000000; // add it somewhere else or just take the proper number of numElemnts
+    size_t const maxBytes = 120000; // add it somewhere else or just take the proper number of numElemnts
     // Clear outputs on all ranks (prior to input in case of in-place)
-
     collArgs.outputGpu.ClearGpuMem(numOutputBytes);
+
+
     // Generate input on root rank - each rank will receive a portion
     PtrUnion tempInput;
     tempInput.Attach(collArgs.outputCpu);
-    tempInput.FillPattern(collArgs.dataType, collArgs.numInputElements, collArgs.globalRank, false);
-    CHECK_HIP(hipMemcpy(collArgs.inputGpu.ptr, tempInput.ptr, numInputBytes, hipMemcpyHostToDevice));
+    // tempInput.FillPattern(collArgs.dataType, collArgs.numInputElements, collArgs.globalRank, false);
+    // CHECK_HIP(hipMemcpy(collArgs.inputGpu.ptr, tempInput.ptr, numInputBytes, hipMemcpyHostToDevice));
+
+    // PtrUnion tempInput;
     PtrUnion tempExpected;
-    tempExpected.AllocateCpuMem(maxBytes);
+    tempExpected.AllocateCpuMem(maxBytes+1);
+
     for (int rank = 0; rank < collArgs.totalRanks; ++rank)
     {
-
-      tempExpected.FillPattern(collArgs.dataType, maxBytes, rank, false); //collArgs.numInputElements this should be the max of all?
+      tempExpected.FillPattern(collArgs.dataType, maxBytes/DataTypeToBytes(collArgs.dataType), rank, false); //collArgs.numOutputElements this should be the max of all?
 
       size_t recvDspls = collArgs.optionalArgs.rdispls[collArgs.globalRank*collArgs.totalRanks + rank] * DataTypeToBytes(collArgs.dataType);
       size_t rankDspls = collArgs.optionalArgs.sdispls[rank*collArgs.totalRanks + collArgs.globalRank] * DataTypeToBytes(collArgs.dataType);
       size_t numBytes = collArgs.optionalArgs.recvcounts[collArgs.globalRank*collArgs.totalRanks + rank] * DataTypeToBytes(collArgs.dataType);
+
       memcpy(collArgs.expected.U1 + recvDspls, tempExpected.U1 + rankDspls, numBytes);
+
     }
+
+    tempInput.FillPattern(collArgs.dataType, collArgs.numInputElements, collArgs.globalRank, false);
+
+    CHECK_HIP(hipMemcpy(collArgs.inputGpu.ptr, tempInput.ptr, numInputBytes, hipMemcpyHostToDevice));
+
     tempExpected.FreeCpuMem();
     return TEST_SUCCESS;
   }

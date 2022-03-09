@@ -38,8 +38,10 @@ namespace RcclUnitTesting
       for (int curRank = 0; curRank  < totalRanks; ++curRank)
       {
         //create send counts, figure it out from there should change num elemends if you want more complicated
+
         sendcounts[root*totalRanks + curRank] = numElements[0] * (curRank + 1);
         if (root == curRank) sendcounts[root*totalRanks + curRank] = 0;
+        // sendcounts[root*totalRanks + curRank] = numElements[0];
         recvcounts[curRank*totalRanks + root] = sendcounts[root*totalRanks + curRank];
       }
     }
@@ -56,11 +58,26 @@ namespace RcclUnitTesting
       numInputElements[root] = sdispls[(root+ 1)*totalRanks - 1] + sendcounts[(root+ 1)*totalRanks - 1];
       numOutputElements[root] = rdispls[(root+ 1)*totalRanks - 1] + recvcounts[(root+ 1)*totalRanks - 1];
     }
+
+
+    for (int root = 0; root < totalRanks; ++root)
+    {
+      for (int curRank = 0; curRank  < totalRanks; ++curRank)
+        printf("%lu, ", recvcounts[root*totalRanks + curRank]);
+      printf("\n");
+    }
+
+    // for (int root = 0; root < totalRanks; ++root)
+    // {
+    //   for (int curRank = 0; curRank  < totalRanks; ++curRank)
+    //     printf("%lu, ", rdispls[root*totalRanks + curRank]);
+    //   printf("\n");
+    // }
     // for (int root = 0; root < totalRanks; ++root)
     // {
     //   INFO("%lu send, %lu Receive, %d rank\n", numInputElements[root], numOutputElements[root], root);
-    // }
 
+    // }
 
     for (int isMultiProcess = 0; isMultiProcess <= 0 && isCorrect; ++isMultiProcess) //akollias change to one should be fine
     {
