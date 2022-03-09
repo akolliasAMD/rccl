@@ -29,9 +29,6 @@ namespace RcclUnitTesting
     bool isCorrect = true;
     int totalRanks = testBed.ev.maxGpus;
 
-    //data prep needs to take into consideration sdispl and r displ (mostly rdispl)
-    //Allocate mem too will need send receive (maybe i can add a function to the struct, it is the sum of all things) (EVERY TIME THE COLLECTIVE IS CALLED IT IS CALLED WITH RANK MEM)
-
     // send and receive prep, should be put in a function
     for (int root = 0; root < totalRanks; ++root)
     {
@@ -61,13 +58,8 @@ namespace RcclUnitTesting
     {
       if (!(testBed.ev.processMask & (1 << isMultiProcess))) continue;
 
-
-        // INFO("%s process %2d-ranks AllToAllv %d Grouped Calls (%s-%s)\n",
-        //      isMultiProcess ? "Multi " : "Single",
-        //      totalRanks, numCollPerGroup,
-        //      ncclRedOpNames[redOps[redOpIdx]], ncclDataTypeNames[dataTypes[dataIdx]]);
       int const numProcesses = isMultiProcess ? totalRanks : 1;
-      testBed.InitComms(TestBed::GetDeviceIdsList(numProcesses, totalRanks), 1);
+      testBed.InitComms(TestBed::GetDeviceIdsList(numProcesses, totalRanks));
 
       for (int dataIdx = 0; dataIdx < dataTypes.size() && isCorrect; ++dataIdx)
       for (int numIdx = 0; numIdx < numElements.size() && isCorrect; ++numIdx)

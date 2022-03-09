@@ -457,11 +457,11 @@ namespace RcclUnitTesting
           break;
         case ncclCollAllToAllv: //akollias
           CHILD_NCCL_CALL(ncclAllToAllv(collArg.inputGpu.ptr,
-                                        collArg.optionalArgs.sendcounts + localRank*this->totalRanks,
-                                        collArg.optionalArgs.sdispls + localRank*this->totalRanks,
+                                        collArg.optionalArgs.sendcounts + (this->rankOffset + localRank)*this->totalRanks,
+                                        collArg.optionalArgs.sdispls + (this->rankOffset + localRank)*this->totalRanks,
                                         collArg.outputGpu.ptr,
-                                        collArg.optionalArgs.recvcounts + localRank*this->totalRanks,
-                                        collArg.optionalArgs.rdispls + localRank*this->totalRanks,
+                                        collArg.optionalArgs.recvcounts + (this->rankOffset + localRank)*this->totalRanks,
+                                        collArg.optionalArgs.rdispls + (this->rankOffset + localRank)*this->totalRanks,
                                         collArg.dataType,
                                         this->comms[localRank],
                                         this->streams[localRank]),
@@ -491,6 +491,7 @@ namespace RcclUnitTesting
         }
       }
     }
+
 
     // End group call
     CHILD_NCCL_CALL(ncclGroupEnd(), "ncclGroupEnd");
