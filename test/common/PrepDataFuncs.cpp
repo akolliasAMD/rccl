@@ -348,30 +348,33 @@ namespace RcclUnitTesting
     CHECK_CALL(CheckAllocation(collArgs));
     size_t const numInputBytes = collArgs.numInputElements * DataTypeToBytes(collArgs.dataType);
     size_t const numOutputBytes = collArgs.numOutputElements * DataTypeToBytes(collArgs.dataType);
-    size_t const maxBytes = 120000; // add it somewhere else or just take the proper number of numElemnts
+
+    // calculating maxBytes as the maximum number of input bytes out of all the ranks
+    size_t maxBytes = 0;
+    for (int rank = 0; rank < collArgs.totalRanks; ++rank)
+    {
+      size_t rankSendCount = collArgs.optionalArgs.sdispls[(rank+ 1)*collArgs.totalRanks - 1] + collArgs.optionalArgs.sendcounts[(rank+ 1)*collArgs.totalRanks - 1];
+      if (maxBytes < rankSendCount)
+        maxBytes = rankSendCount*DataTypeToBytes(collArgs.dataType);
+    }
+
     // Clear outputs on all ranks (prior to input in case of in-place)
     collArgs.outputGpu.ClearGpuMem(numOutputBytes);
 
 
     // Generate input on root rank - each rank will receive a portion
     PtrUnion tempInput;
-    tempInput.Attach(collArgs.outputCpu);
-    // tempInput.FillPattern(collArgs.dataType, collArgs.numInputElements, collArgs.globalRank, false);
-    // CHECK_HIP(hipMemcpy(collArgs.inputGpu.ptr, tempInput.ptr, numInputBytes, hipMemcpyHostToDevice));
-
-    // PtrUnion tempInput;
-    PtrUnion tempExpected;
-    tempExpected.AllocateCpuMem(maxBytes+1);
+    tempInput.AllocateCpuMem(maxBytes);
 
     for (int rank = 0; rank < collArgs.totalRanks; ++rank)
     {
-      tempExpected.FillPattern(collArgs.dataType, maxBytes/DataTypeToBytes(collArgs.dataType), rank, false); //collArgs.numOutputElements this should be the max of all?
+      tempInput.FillPattern(collArgs.dataType, maxBytes/DataTypeToBytes(collArgs.dataType), rank, false);
 
       size_t recvDspls = collArgs.optionalArgs.rdispls[collArgs.globalRank*collArgs.totalRanks + rank] * DataTypeToBytes(collArgs.dataType);
       size_t rankDspls = collArgs.optionalArgs.sdispls[rank*collArgs.totalRanks + collArgs.globalRank] * DataTypeToBytes(collArgs.dataType);
       size_t numBytes = collArgs.optionalArgs.recvcounts[collArgs.globalRank*collArgs.totalRanks + rank] * DataTypeToBytes(collArgs.dataType);
 
-      memcpy(collArgs.expected.U1 + recvDspls, tempExpected.U1 + rankDspls, numBytes);
+      memcpy(collArgs.expected.U1 + recvDspls, tempInput.U1 + rankDspls, numBytes);
 
     }
 
@@ -379,7 +382,7 @@ namespace RcclUnitTesting
 
     CHECK_HIP(hipMemcpy(collArgs.inputGpu.ptr, tempInput.ptr, numInputBytes, hipMemcpyHostToDevice));
 
-    tempExpected.FreeCpuMem();
+    tempInput.FreeCpuMem();
     return TEST_SUCCESS;
   }
 
