@@ -75,15 +75,18 @@ namespace RcclUnitTesting
   };
 
   struct OptionalColArgs
-  { // AKOLLIAS
-    // add scalar transport, scalar mode,
-
+  {
+    int      collId = -1;
+    int      rank = -1;
+    PtrUnion scalarsPerRank = {nullptr};
+    int      scalarMode = -1;
     // allToAllv args
-    size_t sendcounts[MAX_RANKS*MAX_RANKS];
-    size_t sdispls[MAX_RANKS*MAX_RANKS];
-    size_t recvcounts[MAX_RANKS*MAX_RANKS];
-    size_t rdispls[MAX_RANKS*MAX_RANKS];
-
+    size_t   sendcounts[MAX_RANKS*MAX_RANKS];
+    size_t   sdispls[MAX_RANKS*MAX_RANKS];
+    size_t   recvcounts[MAX_RANKS*MAX_RANKS];
+    size_t   rdispls[MAX_RANKS*MAX_RANKS];
+    size_t   numInputElementsArray[MAX_RANKS];
+    size_t   numOutputElementsArray[MAX_RANKS];
   };
 
 
@@ -133,11 +136,8 @@ namespace RcclUnitTesting
                     size_t          const numInputElements,
                     size_t          const numOutputElements,
                     ScalarTransport const scalarsPerRank,
-                    int             const scalarMode = -1,
-                    size_t*         const sendcounts = NULL,
-                    size_t*         const sdispls = NULL,
-                    size_t*         const recvcounts = NULL,
-                    size_t*         const rdispls = NULL);
+                    // int             const scalarMode = -1,
+                    OptionalColArgs const &optionalArgs = {});
 
     // Allocates GPU memory for input/output and CPU memory for expected
     // When inPlace is true, input and output share the same memory

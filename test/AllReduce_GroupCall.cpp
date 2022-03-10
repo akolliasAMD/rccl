@@ -21,6 +21,7 @@ namespace RcclUnitTesting
     bool                        const  useManagedMem   = false;
     int                         const  numCollPerGroup = numElements.size();
 
+    OptionalColArgs allToAllvCounts;
     // This tests runs 3 collectives in the same group call
     bool isCorrect = true;
     for (int totalRanks = testBed.ev.minGpus; totalRanks <= testBed.ev.maxGpus && isCorrect; ++totalRanks)
@@ -42,13 +43,14 @@ namespace RcclUnitTesting
         // Run all element sizes in parallel as single group
         for (int collIdx = 0; collIdx < numCollPerGroup; ++collIdx)
         {
+          allToAllvCounts.collId = collIdx;
           testBed.SetCollectiveArgs(funcType,
                                     dataTypes[dataIdx],
                                     redOps[redOpIdx],
                                     root,
                                     numElements[collIdx],
                                     numElements[collIdx],
-                                    collIdx);
+                                    allToAllvCounts);
         }
         testBed.AllocateMem(inPlace, useManagedMem);
         testBed.PrepareData();

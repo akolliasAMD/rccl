@@ -176,11 +176,7 @@ namespace RcclUnitTesting
     size_t          numInputElements;
     size_t          numOutputElements;
     ScalarTransport scalarTransport;
-    int             scalarMode;
-    size_t          sendcounts[MAX_RANKS];
-    size_t          sdispls[MAX_RANKS];
-    size_t          recvcounts[MAX_RANKS];
-    size_t          rdispls[MAX_RANKS];
+    OptionalColArgs optionalArgs;
 
     PIPE_READ(globalRank);
     PIPE_READ(collId);
@@ -190,7 +186,7 @@ namespace RcclUnitTesting
     PIPE_READ(root);
     PIPE_READ(numInputElements);
     PIPE_READ(numOutputElements);
-    PIPE_READ(scalarMode);
+    PIPE_READ(optionalArgs.scalarMode);
     PIPE_READ(scalarTransport);
     for (int i = 0; i < this->totalRanks; i++)
     {
@@ -202,10 +198,10 @@ namespace RcclUnitTesting
     {
       for (int i = 0; i < this->totalRanks*this->totalRanks; ++i)
       {
-        PIPE_READ(sendcounts[i]);
-        PIPE_READ(sdispls[i]);
-        PIPE_READ(recvcounts[i]);
-        PIPE_READ(rdispls[i]);
+        PIPE_READ(optionalArgs.sendcounts[i]);
+        PIPE_READ(optionalArgs.sdispls[i]);
+        PIPE_READ(optionalArgs.recvcounts[i]);
+        PIPE_READ(optionalArgs.rdispls[i]);
       }
       PIPE_READ(numInputElements);
       PIPE_READ(numOutputElements);
@@ -227,19 +223,18 @@ namespace RcclUnitTesting
                                    this->deviceIds[localRank],
                                    funcType, dataType, redOp, root,
                                    numInputElements, numOutputElements,
-                                   scalarTransport, scalarMode,
-                                   sendcounts, sdispls, recvcounts, rdispls));
+                                   scalarTransport, optionalArgs));
         if (this->verbose) INFO("Rank %d on child %d sets collective %d [%s]\n",
                                 globalRank, this->childId, collIdx,
                                 collArg.GetDescription().c_str());
 
         // If pre-mult scalars are provided, then create a custom reduction operator
-        if (scalarMode >= 0)
+        if (optionalArgs.scalarMode >= 0)
         {
           CHILD_NCCL_CALL(ncclRedOpCreatePreMulSum(&collArg.redOp,
                                                    collArg.localScalar.ptr,
                                                    dataType,
-                                                   (ncclScalarResidence_t)scalarMode,
+                                                   (ncclScalarResidence_t)optionalArgs.scalarMode,
                                                    this->comms[localRank]),
                           "ncclRedOpCreatePreMulSum");
           if (verbose) INFO("Child %d created custom redop %d for collective %d\n",

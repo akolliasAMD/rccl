@@ -128,65 +128,56 @@ namespace RcclUnitTesting
     InitComms(TestBed::GetDeviceIdsList(1, numGpus), numCollectivesInGroup);
   }
 
-  void TestBed::SetCollectiveArgs(ncclFunc_t     const funcType,
-                                  ncclDataType_t const dataType,
-                                  ncclRedOp_t    const redOp,
-                                  int            const root,
-                                  size_t         const numInputElements,
-                                  size_t         const numOutputElements,
-                                  int            const collId,
-                                  int            const rank,
-                                  PtrUnion       const scalarsPerRank,
-                                  int            const scalarMode,
-                                  size_t*        const sendcounts,
-                                  size_t*        const sdispls,
-                                  size_t*        const recvcounts,
-                                  size_t*        const rdispls,
-                                  size_t*        const numInputElementsArray,
-                                  size_t*        const numOutputElementsArray)
+  void TestBed::SetCollectiveArgs(ncclFunc_t      const funcType,
+                                  ncclDataType_t  const dataType,
+                                  ncclRedOp_t     const redOp,
+                                  int             const root,
+                                  size_t          const numInputElements,
+                                  size_t          const numOutputElements,
+                                  OptionalColArgs const &optionalArgs)
   {
     // Build list of ranks this applies to (-1 for rank means to set for all)
     std::vector<int> rankList;
     for (int i = 0; i < this->numActiveRanks; ++i)
-      if (rank == -1 || rank == i) rankList.push_back(i);
+      if (optionalArgs.rank == -1 || optionalArgs.rank == i) rankList.push_back(i);
 
     ScalarTransport scalarTransport;
-    if (scalarMode >= 0)
+    if (optionalArgs.scalarMode >= 0)
     {
-      ASSERT_TRUE(scalarsPerRank.ptr != NULL);
+      ASSERT_TRUE(optionalArgs.scalarsPerRank.ptr != NULL);
 
       // Capture scalars per rank in format to share with child processes
       int const numBytes = this->numActiveRanks * DataTypeToBytes(dataType);
-      memcpy(scalarTransport.ptr, scalarsPerRank.ptr, numBytes);
+      memcpy(scalarTransport.ptr, optionalArgs.scalarsPerRank.ptr, numBytes);
     }
 
     // Loop over all ranks and send CollectiveArgs to appropriate child process
     int const cmd = TestBedChild::CHILD_SET_COLL_ARGS;
-    for (auto currRank : rankList) // akollias we need to also push the sendcounts, receive counts etc, if functype is alltoallv
+    for (auto currRank : rankList)
     {
       int const childId = rankToChildMap[currRank];
       PIPE_WRITE(childId, cmd);
       PIPE_WRITE(childId, currRank);
-      PIPE_WRITE(childId, collId);
+      PIPE_WRITE(childId, optionalArgs.collId);
       PIPE_WRITE(childId, funcType);
       PIPE_WRITE(childId, dataType);
       PIPE_WRITE(childId, redOp);
       PIPE_WRITE(childId, root);
       PIPE_WRITE(childId, numInputElements);
       PIPE_WRITE(childId, numOutputElements);
-      PIPE_WRITE(childId, scalarMode);
+      PIPE_WRITE(childId, optionalArgs.scalarMode);
       PIPE_WRITE(childId, scalarTransport);
       if (funcType == ncclCollAllToAllv)
       {
         for (int i = 0; i < this->numActiveRanks*this->numActiveRanks; ++i)
         {
-          PIPE_WRITE(childId, sendcounts[i]);
-          PIPE_WRITE(childId, sdispls[i]);
-          PIPE_WRITE(childId, recvcounts[i]);
-          PIPE_WRITE(childId, rdispls[i]);
+          PIPE_WRITE(childId, optionalArgs.sendcounts[i]);
+          PIPE_WRITE(childId, optionalArgs.sdispls[i]);
+          PIPE_WRITE(childId, optionalArgs.recvcounts[i]);
+          PIPE_WRITE(childId, optionalArgs.rdispls[i]);
         }
-        PIPE_WRITE(childId, numInputElementsArray[currRank]);
-        PIPE_WRITE(childId, numOutputElementsArray[currRank]);
+        PIPE_WRITE(childId, optionalArgs.numInputElementsArray[currRank]);
+        PIPE_WRITE(childId, optionalArgs.numOutputElementsArray[currRank]);
       }
 
 

@@ -18,13 +18,8 @@ namespace RcclUnitTesting
     bool                        const  inPlace         = false;
     bool                        const  useManagedMem   = false;
 
-    size_t sendcounts[MAX_RANKS * MAX_RANKS];
-    size_t sdispls[MAX_RANKS * MAX_RANKS];
-    size_t recvcounts[MAX_RANKS * MAX_RANKS];
-    size_t rdispls[MAX_RANKS * MAX_RANKS];
-    size_t numInputElements[MAX_RANKS];
-    size_t numOutputElements[MAX_RANKS];
 
+    OptionalColArgs allToAllvCounts;
     int numCollPerGroup = 0;
     bool isCorrect = true;
     int totalRanks = testBed.ev.maxGpus;
@@ -35,22 +30,22 @@ namespace RcclUnitTesting
       for (int curRank = 0; curRank  < totalRanks; ++curRank)
       {
         //create send counts, and build other arrays from that
-        sendcounts[root*totalRanks + curRank] = numElements[0] * (curRank + 1);
-        if (root == curRank) sendcounts[root*totalRanks + curRank] = 0;
-        recvcounts[curRank*totalRanks + root] = sendcounts[root*totalRanks + curRank];
+        allToAllvCounts.sendcounts[root*totalRanks + curRank] = numElements[0] * (curRank + 1);
+        if (root == curRank) allToAllvCounts.sendcounts[root*totalRanks + curRank] = 0;
+        allToAllvCounts.recvcounts[curRank*totalRanks + root] = allToAllvCounts.sendcounts[root*totalRanks + curRank];
       }
     }
     for (int root = 0; root < totalRanks; ++root)
     {
-      sdispls[root*totalRanks] = 0;
-      rdispls[root*totalRanks] = 0;
+      allToAllvCounts.sdispls[root*totalRanks] = 0;
+      allToAllvCounts.rdispls[root*totalRanks] = 0;
       for (int curRank = 1; curRank  < totalRanks; ++curRank)
       {
-        sdispls[root*totalRanks + curRank] = sdispls[root*totalRanks + curRank - 1] + sendcounts[root*totalRanks + curRank - 1];
-        rdispls[root*totalRanks + curRank] = rdispls[root*totalRanks + curRank - 1] + recvcounts[root*totalRanks + curRank - 1];
+        allToAllvCounts.sdispls[root*totalRanks + curRank] = allToAllvCounts.sdispls[root*totalRanks + curRank - 1] + allToAllvCounts.sendcounts[root*totalRanks + curRank - 1];
+        allToAllvCounts.rdispls[root*totalRanks + curRank] = allToAllvCounts.rdispls[root*totalRanks + curRank - 1] + allToAllvCounts.recvcounts[root*totalRanks + curRank - 1];
       }
-      numInputElements[root] = sdispls[(root+ 1)*totalRanks - 1] + sendcounts[(root+ 1)*totalRanks - 1];
-      numOutputElements[root] = rdispls[(root+ 1)*totalRanks - 1] + recvcounts[(root+ 1)*totalRanks - 1];
+      allToAllvCounts.numInputElementsArray[root] = allToAllvCounts.sdispls[(root+ 1)*totalRanks - 1] + allToAllvCounts.sendcounts[(root+ 1)*totalRanks - 1];
+      allToAllvCounts.numOutputElementsArray[root] = allToAllvCounts.rdispls[(root+ 1)*totalRanks - 1] + allToAllvCounts.recvcounts[(root+ 1)*totalRanks - 1];
     }
 
 
@@ -79,16 +74,7 @@ namespace RcclUnitTesting
                                   0, //does not affect anything
                                   0,
                                   0,
-                                  -1,
-                                  -1,
-                                  {nullptr},
-                                  -1,
-                                  sendcounts, //akollias
-                                  sdispls,
-                                  recvcounts,
-                                  rdispls,
-                                  numInputElements,
-                                  numOutputElements);
+                                  allToAllvCounts);
         testBed.AllocateMem(inPlace, useManagedMem);
         testBed.PrepareData(); // fails in here
         testBed.ExecuteCollectives();

@@ -17,6 +17,8 @@ namespace RcclUnitTesting
     bool                        const  inPlace         = false;
     bool                        const  useManagedMem   = false;
 
+    OptionalColArgs sendRecvCounts;
+    sendRecvCounts.collId = 0;
     int numCollPerGroup = 0;
     bool isCorrect = true;
     int totalRanks = testBed.ev.maxGpus;
@@ -31,14 +33,14 @@ namespace RcclUnitTesting
       {
         for (int recvRank = 0; recvRank  < totalRanks; ++recvRank)
         {
+          sendRecvCounts.rank = sendRank;
           testBed.SetCollectiveArgs(ncclCollSend,
                                     dataTypes[dataIdx],
                                     ncclSum, // This should be moved to optional variables struct
                                     recvRank,
                                     numElements[numIdx],
                                     numElements[numIdx],
-                                    0,
-                                    sendRank);
+                                    sendRecvCounts);
           if (recvRank == 0)
           {
 
@@ -55,18 +57,17 @@ namespace RcclUnitTesting
                   recvRank,
                   numElements[numIdx]);
 
-
+            sendRecvCounts.rank = recvRank;
             testBed.SetCollectiveArgs(ncclCollRecv,
                                       dataTypes[dataIdx],
                                       ncclSum, // This should be moved to optional variables struct
                                       sendRank,
                                       numElements[numIdx],
                                       numElements[numIdx],
-                                      0,
-                                      recvRank);
+                                      sendRecvCounts);
             testBed.AllocateMem(inPlace, useManagedMem, -1, recvRank);
             testBed.PrepareData(-1, recvRank);
-            testBed.ExecuteCollectives({sendRank,recvRank });
+            testBed.ExecuteCollectives({sendRank, recvRank});
             testBed.ValidateResults(isCorrect, -1, recvRank);
             testBed.DeallocateMem(-1, recvRank);
           }

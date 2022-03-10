@@ -19,14 +19,10 @@ namespace RcclUnitTesting
                                   size_t          const  numInputElements,
                                   size_t          const  numOutputElements,
                                   ScalarTransport const  scalarTransport,
-                                  int             const  scalarMode,
-                                  size_t*         const  sendcounts,
-                                  size_t*         const  sdispls,
-                                  size_t*         const  recvcounts,
-                                  size_t*         const  rdispls)
+                                  OptionalColArgs const  &optionalColArgs)
   {
     // Free scalar based on previous scalarMode
-    if (scalarMode != -1)
+    if (optionalColArgs.scalarMode != -1)
     {
       if (this->localScalar.ptr != nullptr)
       {
@@ -45,18 +41,18 @@ namespace RcclUnitTesting
     this->numInputElements  = numInputElements;
     this->numOutputElements = numOutputElements;
     this->scalarTransport   = scalarTransport;
-    this->scalarMode        = scalarMode;
+    this->scalarMode        = optionalColArgs.scalarMode;
 
-    if (scalarMode != -1)
+    if (optionalColArgs.scalarMode != -1)
     {
       size_t const numBytes = DataTypeToBytes(dataType);
-      if (scalarMode == ncclScalarDevice)
+      if (optionalColArgs.scalarMode == ncclScalarDevice)
       {
         CHECK_CALL(this->localScalar.AllocateGpuMem(numBytes));
         CHECK_HIP(hipMemcpy(this->localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes),
                             numBytes, hipMemcpyHostToDevice));
       }
-      else if (scalarMode == ncclScalarHostImmediate)
+      else if (optionalColArgs.scalarMode == ncclScalarHostImmediate)
       {
         CHECK_HIP(hipHostMalloc(&this->localScalar.ptr, numBytes, 0));
         memcpy(this->localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes), numBytes);
@@ -66,10 +62,10 @@ namespace RcclUnitTesting
     {
       for (int i = 0; i < this->totalRanks*this->totalRanks; ++i)
       {
-        this->optionalArgs.sendcounts[i] = sendcounts[i];
-        this->optionalArgs.sdispls[i] = sdispls[i];
-        this->optionalArgs.recvcounts[i] = recvcounts[i];
-        this->optionalArgs.rdispls[i] = rdispls[i];
+        this->optionalArgs.sendcounts[i] = optionalColArgs.sendcounts[i];
+        this->optionalArgs.sdispls[i] = optionalColArgs.sdispls[i];
+        this->optionalArgs.recvcounts[i] = optionalColArgs.recvcounts[i];
+        this->optionalArgs.rdispls[i] = optionalColArgs.rdispls[i];
       }
     }
     return TEST_SUCCESS;
