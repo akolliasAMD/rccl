@@ -136,7 +136,6 @@ namespace RcclUnitTesting
                     size_t          const numInputElements,
                     size_t          const numOutputElements,
                     ScalarTransport const scalarsPerRank,
-                    // int             const scalarMode = -1,
                     OptionalColArgs const &optionalArgs = {});
 
     // Allocates GPU memory for input/output and CPU memory for expected

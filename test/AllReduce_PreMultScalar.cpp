@@ -21,7 +21,7 @@ namespace RcclUnitTesting
     bool                        const  inPlace       = false;
     bool                        const  useManagedMem = false;
 
-    OptionalColArgs allToAllvCounts;
+    OptionalColArgs optsScalarMode;
     // Terminate the test as soon as first failure occurs
     bool isCorrect = true;
     for (int totalRanks = testBed.ev.minGpus; totalRanks <= testBed.ev.maxGpus && isCorrect; ++totalRanks)
@@ -53,11 +53,11 @@ namespace RcclUnitTesting
 
           for (int i = 0; i < numElements.size() && isCorrect; ++i)
           {
-            allToAllvCounts.scalarsPerRank.Attach(scalarsPerRank);
-            allToAllvCounts.scalarMode = scalarMode;
+            optsScalarMode.scalarsPerRank.Attach(scalarsPerRank);
+            optsScalarMode.scalarMode = scalarMode;
             testBed.SetCollectiveArgs(funcType, dataType, redOp, root,
                                       numElements[i], numElements[i],
-                                      allToAllvCounts);
+                                      optsScalarMode);
             // For performance, only allocate and prepare data on largest size
             if (i == 0)
             {
