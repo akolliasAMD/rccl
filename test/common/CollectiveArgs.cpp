@@ -36,8 +36,8 @@ namespace RcclUnitTesting
     this->deviceId          = deviceId;
     this->funcType          = funcType;
     this->dataType          = dataType;
-    // this->redOp             = redOp;
-    // this->root              = root;
+    // this->optionalArgs.redOp             = redOp;
+    // this->optionalArgs.root              = root;
     this->numInputElements  = numInputElements;
     this->numOutputElements = numOutputElements;
     this->scalarTransport   = scalarTransport;
@@ -117,7 +117,7 @@ namespace RcclUnitTesting
   ErrCode CollectiveArgs::ValidateResults()
   {
     // Ignore non-root outputs for collectives with a root
-    if (CollectiveArgs::UsesRoot(this->funcType) && this->root != this->globalRank) return TEST_SUCCESS;
+    if (CollectiveArgs::UsesRoot(this->funcType) && this->optionalArgs.root != this->globalRank) return TEST_SUCCESS;
 
     size_t const numOutputBytes = (this->numOutputElements * DataTypeToBytes(this->dataType));
 
@@ -186,9 +186,9 @@ namespace RcclUnitTesting
         this->funcType == ncclCollReduceScatter ||
         this->funcType == ncclCollAllReduce)
     {
-      if (this->redOp < ncclNumOps)
+      if (this->optionalArgs.redOp < ncclNumOps)
       {
-        ss << ncclRedOpNames[this->redOp] << " ";
+        ss << ncclRedOpNames[this->optionalArgs.redOp] << " ";
       }
       else
       {
@@ -217,13 +217,13 @@ namespace RcclUnitTesting
         this->funcType == ncclCollGather ||
         this->funcType == ncclCollScatter)
     {
-      ss << "Root " << this->root << " ";
+      ss << "Root " << this->optionalArgs.root << " ";
     }
 
     if (this->funcType == ncclCollSend ||
         this->funcType == ncclCollRecv)
     {
-      ss << "Peer " << this->root << " ";
+      ss << "Peer " << this->optionalArgs.root << " ";
     }
 
     ss << "#In: " << this->numInputElements;
