@@ -53,10 +53,12 @@ namespace RcclUnitTesting
 
           for (int i = 0; i < numElements.size() && isCorrect; ++i)
           {
-            optsScalarMode.scalarsPerRank.Attach(scalarsPerRank);
+            optsScalarMode.localScalar.Attach(scalarsPerRank);
             optsScalarMode.scalarMode = scalarMode;
-            testBed.SetCollectiveArgs(funcType, dataType, redOp, root,
-                                      numElements[i], numElements[i],
+            optsScalarMode.redOp = redOp;
+            optsScalarMode.root = root;
+            testBed.SetCollectiveArgs(funcType, dataType,
+                                      numElements[i], numElements[i], -1, -1,
                                       optsScalarMode);
             // For performance, only allocate and prepare data on largest size
             if (i == 0)

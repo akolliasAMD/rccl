@@ -41,12 +41,14 @@ namespace RcclUnitTesting
     // Using collId = -1 (default) applies settings to all collectives in group
     // Using rank = -1 (default) applies settings to all ranks
 
-    void SetCollectiveArgs(ncclFunc_t     const funcType,
-                           ncclDataType_t const dataType,
-                           ncclRedOp_t    const redOp,
-                           int            const root,
-                           size_t         const numInputElements,
-                           size_t         const numOutputElements,
+    void SetCollectiveArgs(ncclFunc_t      const funcType,
+                           ncclDataType_t  const dataType,
+                           // ncclRedOp_t    const redOp,
+                           // int            const root,
+                           size_t          const numInputElements,
+                           size_t          const numOutputElements,
+                           int             const collId = -1,
+                           int             const rank = -1,
                            OptionalColArgs const &optionalArgs = {});
 
 

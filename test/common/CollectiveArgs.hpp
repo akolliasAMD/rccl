@@ -76,17 +76,15 @@ namespace RcclUnitTesting
 
   struct OptionalColArgs
   {
-    int      collId = -1;
-    int      rank = -1;
-    PtrUnion scalarsPerRank = {nullptr};
-    int      scalarMode = -1;
+    ncclRedOp_t redOp = ncclSum;
+    int         root = 0; // Used as "peer" for Send/Recv
+    PtrUnion    localScalar = {nullptr};
+    int         scalarMode = -1;
     // allToAllv args
-    size_t   sendcounts[MAX_RANKS*MAX_RANKS];
-    size_t   sdispls[MAX_RANKS*MAX_RANKS];
-    size_t   recvcounts[MAX_RANKS*MAX_RANKS];
-    size_t   rdispls[MAX_RANKS*MAX_RANKS];
-    size_t   numInputElementsArray[MAX_RANKS];
-    size_t   numOutputElementsArray[MAX_RANKS];
+    size_t      sendcounts[MAX_RANKS*MAX_RANKS];
+    size_t      sdispls[MAX_RANKS*MAX_RANKS];
+    size_t      recvcounts[MAX_RANKS*MAX_RANKS];
+    size_t      rdispls[MAX_RANKS*MAX_RANKS];
   };
 
 
@@ -103,13 +101,13 @@ namespace RcclUnitTesting
     int             deviceId;
     ncclFunc_t      funcType;
     ncclDataType_t  dataType;
-    ncclRedOp_t     redOp;
-    int             root;              // Used as "peer" for Send/Recv
+    // ncclRedOp_t     redOp;
+    // int             root;
     size_t          numInputElements;
     size_t          numOutputElements;
     ScalarTransport scalarTransport;   // Used for custom reduction operators
-    PtrUnion        localScalar;
-    int             scalarMode;        // -1 if scalar not used
+    // PtrUnion        localScalar;
+    // int             scalarMode;        // -1 if scalar not used
 
     OptionalColArgs optionalArgs;
 
@@ -131,8 +129,8 @@ namespace RcclUnitTesting
                     int             const deviceId,
                     ncclFunc_t      const funcType,
                     ncclDataType_t  const dataType,
-                    ncclRedOp_t     const redOp,
-                    int             const root,
+                    // ncclRedOp_t     const redOp,
+                    // int             const root,
                     size_t          const numInputElements,
                     size_t          const numOutputElements,
                     ScalarTransport const scalarsPerRank,

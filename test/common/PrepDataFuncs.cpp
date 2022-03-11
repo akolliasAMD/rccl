@@ -65,15 +65,15 @@ namespace RcclUnitTesting
     CHECK_CALL(collArgs.outputGpu.ClearGpuMem(numBytes));
 
     // Only root needs input pattern
-    if (collArgs.globalRank == collArgs.root)
+    if (collArgs.globalRank == collArgs.optionalArgs.root)
       CHECK_CALL(collArgs.inputGpu.FillPattern(collArgs.dataType,
                                                collArgs.numInputElements,
-                                               collArgs.root, true));
+                                               collArgs.optionalArgs.root, true));
 
     // Otherwise all other ranks expected output is the same as input of root
     return collArgs.expected.FillPattern(collArgs.dataType,
                                          collArgs.numInputElements,
-                                         collArgs.root,
+                                         collArgs.optionalArgs.root,
                                          false);
   }
 
@@ -97,7 +97,7 @@ namespace RcclUnitTesting
     CHECK_CALL(result.ClearCpuMem(numBytes));
 
     // If average or custom reduction operator is used, perform a summation instead
-    ncclRedOp_t const tempOp = (collArgs.redOp >= ncclAvg ? ncclSum : collArgs.redOp);
+    ncclRedOp_t const tempOp = (collArgs.optionalArgs.redOp >= ncclAvg ? ncclSum : collArgs.optionalArgs.redOp);
 
     // Loop over each rank and generate their input into a temp buffer, then reduce
     PtrUnion scalarsPerRank;
@@ -118,14 +118,14 @@ namespace RcclUnitTesting
 
       // Scale the temporary input by local scalar for this rank
       // (Used by custom reduction ops)
-      if (collArgs.scalarMode >= 0)
+      if (collArgs.optionalArgs.scalarMode >= 0)
       {
         CHECK_CALL(tempInputCpu.Scale(collArgs.dataType, collArgs.numInputElements,
                                       scalarsPerRank, rank));
       }
 
       // Any rank that requires output reduces the scaled-inputs
-      if (isAllReduce || collArgs.root == collArgs.globalRank)
+      if (isAllReduce || collArgs.optionalArgs.root == collArgs.globalRank)
       {
         if (rank == 0)
         {
@@ -140,7 +140,7 @@ namespace RcclUnitTesting
     }
 
     // Perform averaging if necessary
-    if (collArgs.redOp == ncclAvg && (isAllReduce || collArgs.root == collArgs.globalRank))
+    if (collArgs.optionalArgs.redOp == ncclAvg && (isAllReduce || collArgs.optionalArgs.root == collArgs.globalRank))
     {
       CHECK_CALL(result.DivideByInt(collArgs.dataType, collArgs.numInputElements, collArgs.totalRanks));
     }
@@ -177,7 +177,7 @@ namespace RcclUnitTesting
       {
         CHECK_HIP(hipMemcpy(collArgs.inputGpu.ptr, tempInputCpu.ptr, numInputBytes, hipMemcpyHostToDevice));
       }
-      if (isAllGather || collArgs.root == collArgs.globalRank)
+      if (isAllGather || collArgs.optionalArgs.root == collArgs.globalRank)
       {
         memcpy(result.I1 + (rank * numInputBytes), tempInputCpu.ptr, numInputBytes);
       }
@@ -208,7 +208,7 @@ namespace RcclUnitTesting
     CHECK_CALL(tempResultCpu.ClearCpuMem(numInputBytes));
 
     // If average or custom reduction operator is used, perform a summation instead
-    ncclRedOp_t const tempOp = (collArgs.redOp >= ncclAvg ? ncclSum : collArgs.redOp);
+    ncclRedOp_t const tempOp = (collArgs.optionalArgs.redOp >= ncclAvg ? ncclSum : collArgs.optionalArgs.redOp);
 
     // Loop over each rank and generate the input / scale / reduce
     PtrUnion scalarsPerRank;
@@ -230,7 +230,7 @@ namespace RcclUnitTesting
 
       // Scale the temporary input by local scalar for this rank
       // (Used by custom reduction ops)
-      if (collArgs.scalarMode >= 0)
+      if (collArgs.optionalArgs.scalarMode >= 0)
       {
         CHECK_CALL(tempInputCpu.Scale(collArgs.dataType, collArgs.numInputElements,
                                       scalarsPerRank, rank));
@@ -248,7 +248,7 @@ namespace RcclUnitTesting
     }
 
     // Perform averaging if necessary
-    if (collArgs.redOp == ncclAvg)
+    if (collArgs.optionalArgs.redOp == ncclAvg)
     {
       CHECK_CALL(tempResultCpu.DivideByInt(collArgs.dataType, collArgs.numInputElements, collArgs.totalRanks));
     }
@@ -280,10 +280,10 @@ namespace RcclUnitTesting
     // Generate input as if on root rank - each rank will receive a portion
     PtrUnion tempInput;
     tempInput.AllocateCpuMem(numInputBytes);
-    tempInput.FillPattern(collArgs.dataType, collArgs.numInputElements, collArgs.root, false);
+    tempInput.FillPattern(collArgs.dataType, collArgs.numInputElements, collArgs.optionalArgs.root, false);
 
     // Copy input to root rank
-    if (collArgs.globalRank == collArgs.root)
+    if (collArgs.globalRank == collArgs.optionalArgs.root)
     {
       if (hipMemcpy(collArgs.inputGpu.ptr, tempInput.ptr, numInputBytes, hipMemcpyHostToDevice) != hipSuccess)
       {
@@ -342,7 +342,7 @@ namespace RcclUnitTesting
     return TEST_SUCCESS;
   }
 
-  ErrCode DefaultPrepData_AllToAllv(CollectiveArgs &collArgs) //AKOLLIAS Change based on displacement (go through the the number while going throuhgh send (call fillpattern rank times))
+  ErrCode DefaultPrepData_AllToAllv(CollectiveArgs &collArgs)
   {
 
     CHECK_CALL(CheckAllocation(collArgs));
@@ -399,7 +399,7 @@ namespace RcclUnitTesting
     CHECK_CALL(CheckAllocation(collArgs));
     return collArgs.expected.FillPattern(collArgs.dataType,
                                          collArgs.numOutputElements,
-                                         collArgs.root,
+                                         collArgs.optionalArgs.root,
                                          false);
   }
 }

@@ -10,42 +10,38 @@ namespace RcclUnitTesting
   TEST(AllToAllv, OutOfPlace)
   {
     TestBed testBed;
-
-
     // Configuration
     std::vector<ncclDataType_t> const& dataTypes       = {ncclInt32, ncclFloat64};
     std::vector<int>            const  numElements     = {1048576, 53327, 1024};
     bool                        const  inPlace         = false;
     bool                        const  useManagedMem   = false;
 
-
-    OptionalColArgs allToAllvCounts;
-    int numCollPerGroup = 0;
+    OptionalColArgs options;
+    size_t numInputElementsArray[MAX_RANKS], numOutputElementsArray[MAX_RANKS];
     bool isCorrect = true;
     int totalRanks = testBed.ev.maxGpus;
 
     // send and receive prep, should be put in a function
-    for (int root = 0; root < totalRanks; ++root)
+    for (int sendRank = 0; sendRank < totalRanks; ++sendRank)
     {
-      for (int curRank = 0; curRank  < totalRanks; ++curRank)
+      for (int recvRank  = 0; recvRank   < totalRanks; ++recvRank )
       {
         //create send counts, and build other arrays from that
-        allToAllvCounts.sendcounts[root*totalRanks + curRank] = numElements[0] * (curRank + 1);
-        if (root == curRank) allToAllvCounts.sendcounts[root*totalRanks + curRank] = 0;
-        allToAllvCounts.recvcounts[curRank*totalRanks + root] = allToAllvCounts.sendcounts[root*totalRanks + curRank];
+        options.sendcounts[sendRank*totalRanks + recvRank ] = numElements[0] * (recvRank  + 1);
+        options.recvcounts[recvRank *totalRanks + sendRank] = options.sendcounts[sendRank*totalRanks + recvRank ];
       }
     }
-    for (int root = 0; root < totalRanks; ++root)
+    for (int sendRank = 0; sendRank < totalRanks; ++sendRank)
     {
-      allToAllvCounts.sdispls[root*totalRanks] = 0;
-      allToAllvCounts.rdispls[root*totalRanks] = 0;
-      for (int curRank = 1; curRank  < totalRanks; ++curRank)
+      options.sdispls[sendRank*totalRanks] = 0;
+      options.rdispls[sendRank*totalRanks] = 0;
+      for (int recvRank  = 1; recvRank   < totalRanks; ++recvRank )
       {
-        allToAllvCounts.sdispls[root*totalRanks + curRank] = allToAllvCounts.sdispls[root*totalRanks + curRank - 1] + allToAllvCounts.sendcounts[root*totalRanks + curRank - 1];
-        allToAllvCounts.rdispls[root*totalRanks + curRank] = allToAllvCounts.rdispls[root*totalRanks + curRank - 1] + allToAllvCounts.recvcounts[root*totalRanks + curRank - 1];
+        options.sdispls[sendRank*totalRanks + recvRank ] = options.sdispls[sendRank*totalRanks + recvRank  - 1] + options.sendcounts[sendRank*totalRanks + recvRank  - 1];
+        options.rdispls[sendRank*totalRanks + recvRank ] = options.rdispls[sendRank*totalRanks + recvRank  - 1] + options.recvcounts[sendRank*totalRanks + recvRank  - 1];
       }
-      allToAllvCounts.numInputElementsArray[root] = allToAllvCounts.sdispls[(root+ 1)*totalRanks - 1] + allToAllvCounts.sendcounts[(root+ 1)*totalRanks - 1];
-      allToAllvCounts.numOutputElementsArray[root] = allToAllvCounts.rdispls[(root+ 1)*totalRanks - 1] + allToAllvCounts.recvcounts[(root+ 1)*totalRanks - 1];
+      numInputElementsArray[sendRank] = options.sdispls[(sendRank+ 1)*totalRanks - 1] + options.sendcounts[(sendRank+ 1)*totalRanks - 1];
+      numOutputElementsArray[sendRank] = options.rdispls[(sendRank+ 1)*totalRanks - 1] + options.recvcounts[(sendRank+ 1)*totalRanks - 1];
     }
 
 
@@ -68,13 +64,19 @@ namespace RcclUnitTesting
           INFO("%s\n", name.c_str());
 
         }
-        testBed.SetCollectiveArgs(ncclCollAllToAllv,
+        for (int rank = 0; rank < totalRanks; ++rank)
+        {
+          testBed.SetCollectiveArgs(ncclCollAllToAllv,
                                   dataTypes[dataIdx],
-                                  ncclSum, // This should be moved to optional variables struct
-                                  0, //does not affect anything
-                                  0,
-                                  0,
-                                  allToAllvCounts);
+                                  // ncclSum, // This should be moved to optional variables struct
+                                  // 0, //does not affect anything
+                                  numInputElementsArray[rank],
+                                  numOutputElementsArray[rank],
+                                  -1,
+                                  rank,
+                                  options);
+
+        }
         testBed.AllocateMem(inPlace, useManagedMem);
         testBed.PrepareData(); // fails in here
         testBed.ExecuteCollectives();

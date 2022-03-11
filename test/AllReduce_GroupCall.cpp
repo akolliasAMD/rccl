@@ -43,13 +43,16 @@ namespace RcclUnitTesting
         // Run all element sizes in parallel as single group
         for (int collIdx = 0; collIdx < numCollPerGroup; ++collIdx)
         {
-          OptionalArgsCollId.collId = collIdx;
+          OptionalArgsCollId.redOp = redOps[redOpIdx];
+          OptionalArgsCollId.root = root;
           testBed.SetCollectiveArgs(funcType,
                                     dataTypes[dataIdx],
-                                    redOps[redOpIdx],
-                                    root,
+                                    // redOps[redOpIdx],
+                                    // root,
                                     numElements[collIdx],
                                     numElements[collIdx],
+                                    collIdx,
+                                    -1,
                                     OptionalArgsCollId);
         }
         testBed.AllocateMem(inPlace, useManagedMem);
