@@ -79,7 +79,7 @@ namespace RcclUnitTesting
     ncclRedOp_t redOp = ncclSum;
     int         root = 0; // Used as "peer" for Send/Recv
     PtrUnion    localScalar = {nullptr};
-    int         scalarMode = -1;
+    int         scalarMode = -1; // -1 if scalar not used
     // allToAllv args
     size_t      sendcounts[MAX_RANKS*MAX_RANKS];
     size_t      sdispls[MAX_RANKS*MAX_RANKS];
@@ -101,14 +101,9 @@ namespace RcclUnitTesting
     int             deviceId;
     ncclFunc_t      funcType;
     ncclDataType_t  dataType;
-    // ncclRedOp_t     redOp;
-    // int             root;
     size_t          numInputElements;
     size_t          numOutputElements;
     ScalarTransport scalarTransport;   // Used for custom reduction operators
-    // PtrUnion        localScalar;
-    // int             scalarMode;        // -1 if scalar not used
-
     OptionalColArgs optionalArgs;
 
     // Data
@@ -129,8 +124,6 @@ namespace RcclUnitTesting
                     int             const deviceId,
                     ncclFunc_t      const funcType,
                     ncclDataType_t  const dataType,
-                    // ncclRedOp_t     const redOp,
-                    // int             const root,
                     size_t          const numInputElements,
                     size_t          const numOutputElements,
                     ScalarTransport const scalarsPerRank,

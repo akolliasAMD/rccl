@@ -68,8 +68,6 @@ namespace RcclUnitTesting
         {
           testBed.SetCollectiveArgs(ncclCollAllToAllv,
                                   dataTypes[dataIdx],
-                                  // ncclSum, // This should be moved to optional variables struct
-                                  // 0, //does not affect anything
                                   numInputElementsArray[rank],
                                   numOutputElementsArray[rank],
                                   -1,
@@ -78,7 +76,7 @@ namespace RcclUnitTesting
 
         }
         testBed.AllocateMem(inPlace, useManagedMem);
-        testBed.PrepareData(); // fails in here
+        testBed.PrepareData();
         testBed.ExecuteCollectives();
         testBed.ValidateResults(isCorrect);
         testBed.DeallocateMem();

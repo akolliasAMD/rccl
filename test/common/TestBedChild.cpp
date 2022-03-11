@@ -171,8 +171,6 @@ namespace RcclUnitTesting
     int             collId;
     ncclFunc_t      funcType;
     ncclDataType_t  dataType;
-    // ncclRedOp_t     redOp;
-    // int             root;
     size_t          numInputElements;
     size_t          numOutputElements;
     ScalarTransport scalarTransport;

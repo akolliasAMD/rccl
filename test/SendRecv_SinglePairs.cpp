@@ -18,7 +18,6 @@ namespace RcclUnitTesting
     bool                        const  useManagedMem   = false;
 
     OptionalColArgs sendRecvCounts;
-    // sendRecvCounts.collId = 0;
     int numCollPerGroup = 0;
     bool isCorrect = true;
     int totalRanks = testBed.ev.maxGpus;
@@ -36,8 +35,6 @@ namespace RcclUnitTesting
           sendRecvCounts.root = recvRank;
           testBed.SetCollectiveArgs(ncclCollSend,
                                     dataTypes[dataIdx],
-                                    // ncclSum, // This should be moved to optional variables struct
-                                    // recvRank,
                                     numElements[numIdx],
                                     numElements[numIdx],
                                     0,
@@ -62,8 +59,6 @@ namespace RcclUnitTesting
             sendRecvCounts.root = sendRank;
             testBed.SetCollectiveArgs(ncclCollRecv,
                                       dataTypes[dataIdx],
-                                      // ncclSum, // This should be moved to optional variables struct
-                                      // sendRank,
                                       numElements[numIdx],
                                       numElements[numIdx],
                                       0,

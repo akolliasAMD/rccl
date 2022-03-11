@@ -14,8 +14,6 @@ namespace RcclUnitTesting
                                   int             const  deviceId,
                                   ncclFunc_t      const  funcType,
                                   ncclDataType_t  const  dataType,
-                                  // ncclRedOp_t     const  redOp,
-                                  // int             const  root,
                                   size_t          const  numInputElements,
                                   size_t          const  numOutputElements,
                                   ScalarTransport const  scalarTransport,
@@ -40,7 +38,6 @@ namespace RcclUnitTesting
     this->numOutputElements = numOutputElements;
     this->scalarTransport   = scalarTransport;
     this->optionalArgs      = optionalColArgs;
-    // this->optionalArgs.scalarMode = optionalColArgs.scalarMode;
 
     if (this->optionalArgs.scalarMode != -1)
     {

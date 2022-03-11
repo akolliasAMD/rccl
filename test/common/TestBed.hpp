@@ -43,8 +43,6 @@ namespace RcclUnitTesting
 
     void SetCollectiveArgs(ncclFunc_t      const funcType,
                            ncclDataType_t  const dataType,
-                           // ncclRedOp_t    const redOp,
-                           // int            const root,
                            size_t          const numInputElements,
                            size_t          const numOutputElements,
                            int             const collId = -1,

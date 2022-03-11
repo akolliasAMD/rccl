@@ -47,8 +47,6 @@ namespace RcclUnitTesting
           OptionalArgsCollId.root = root;
           testBed.SetCollectiveArgs(funcType,
                                     dataTypes[dataIdx],
-                                    // redOps[redOpIdx],
-                                    // root,
                                     numElements[collIdx],
                                     numElements[collIdx],
                                     collIdx,
