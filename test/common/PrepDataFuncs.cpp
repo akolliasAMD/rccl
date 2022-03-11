@@ -342,7 +342,7 @@ namespace RcclUnitTesting
     return TEST_SUCCESS;
   }
 
-  ErrCode DefaultPrepData_AllToAllv(CollectiveArgs &collArgs) //AKOLLIAS Change based on displacement (go through the the number while going throuhgh send (call fillpattern rank times))
+  ErrCode DefaultPrepData_AllToAllv(CollectiveArgs &collArgs)
   {
 
     CHECK_CALL(CheckAllocation(collArgs));

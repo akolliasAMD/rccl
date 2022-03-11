@@ -198,7 +198,7 @@ namespace RcclUnitTesting
     {
       for (int i = 0; i < this->totalRanks*this->totalRanks; ++i)
       {
-        PIPE_READ(optionalArgs.sendcounts[i]);
+        PIPE_READ(optionalArgs.sendcounts[i]); //PIPE_READ(optionalArgs)
         PIPE_READ(optionalArgs.sdispls[i]);
         PIPE_READ(optionalArgs.recvcounts[i]);
         PIPE_READ(optionalArgs.rdispls[i]);
@@ -448,7 +448,7 @@ namespace RcclUnitTesting
                                        this->streams[localRank]),
                           "ncclAllToAll");
           break;
-        case ncclCollAllToAllv: //akollias
+        case ncclCollAllToAllv:
           CHILD_NCCL_CALL(ncclAllToAllv(collArg.inputGpu.ptr,
                                         collArg.optionalArgs.sendcounts + (this->rankOffset + localRank)*this->totalRanks,
                                         collArg.optionalArgs.sdispls + (this->rankOffset + localRank)*this->totalRanks,
