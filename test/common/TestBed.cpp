@@ -169,18 +169,7 @@ namespace RcclUnitTesting
       PIPE_WRITE(childId, numOutputElements);
       PIPE_WRITE(childId, optionalArgs.scalarMode);
       PIPE_WRITE(childId, scalarTransport);
-      if (funcType == ncclCollAllToAllv)
-      {
-        for (int i = 0; i < this->numActiveRanks*this->numActiveRanks; ++i)
-        {
-          PIPE_WRITE(childId, optionalArgs.sendcounts[i]);
-          PIPE_WRITE(childId, optionalArgs.sdispls[i]);
-          PIPE_WRITE(childId, optionalArgs.recvcounts[i]);
-          PIPE_WRITE(childId, optionalArgs.rdispls[i]);
-        }
-      }
-
-
+      PIPE_WRITE(childId, optionalArgs);
       PIPE_CHECK(childId);
     }
   }

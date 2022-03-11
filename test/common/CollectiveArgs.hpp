@@ -77,7 +77,7 @@ namespace RcclUnitTesting
   struct OptionalColArgs
   {
     ncclRedOp_t redOp = ncclSum;
-    int         root = 0;
+    int         root = 0; // Used as "peer" for Send/Recv
     PtrUnion    localScalar = {nullptr};
     int         scalarMode = -1;
     // allToAllv args
@@ -101,8 +101,8 @@ namespace RcclUnitTesting
     int             deviceId;
     ncclFunc_t      funcType;
     ncclDataType_t  dataType;
-    ncclRedOp_t     redOp;
-    int             root;              // Used as "peer" for Send/Recv
+    // ncclRedOp_t     redOp;
+    // int             root;
     size_t          numInputElements;
     size_t          numOutputElements;
     ScalarTransport scalarTransport;   // Used for custom reduction operators
