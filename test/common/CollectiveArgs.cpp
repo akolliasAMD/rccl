@@ -26,8 +26,8 @@ namespace RcclUnitTesting
     {
       if (this->localScalar.ptr != nullptr)
       {
-        if (this->scalarMode == 0) this->localScalar.FreeGpuMem();
-        if (this->scalarMode == 1) hipHostFree(this->localScalar.ptr);
+        if (this->optionalArgs.scalarMode == 0) this->localScalar.FreeGpuMem();
+        if (this->optionalArgs.scalarMode == 1) hipHostFree(this->localScalar.ptr);
       }
     }
 
@@ -41,7 +41,7 @@ namespace RcclUnitTesting
     this->numInputElements  = numInputElements;
     this->numOutputElements = numOutputElements;
     this->scalarTransport   = scalarTransport;
-    this->scalarMode        = optionalColArgs.scalarMode;
+    this->optionalArgs.scalarMode        = optionalColArgs.scalarMode;
 
     if (optionalColArgs.scalarMode != -1)
     {
@@ -163,8 +163,8 @@ namespace RcclUnitTesting
 
     if (this->localScalar.ptr != nullptr)
     {
-      if (this->scalarMode == 0) this->localScalar.FreeGpuMem();
-      if (this->scalarMode == 1) CHECK_HIP(hipHostFree(this->localScalar.ptr));
+      if (this->optionalArgs.scalarMode == 0) this->localScalar.FreeGpuMem();
+      if (this->optionalArgs.scalarMode == 1) CHECK_HIP(hipHostFree(this->localScalar.ptr));
     }
     return TEST_SUCCESS;
   }

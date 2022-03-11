@@ -176,8 +176,6 @@ namespace RcclUnitTesting
           PIPE_WRITE(childId, optionalArgs.recvcounts[i]);
           PIPE_WRITE(childId, optionalArgs.rdispls[i]);
         }
-        PIPE_WRITE(childId, optionalArgs.numInputElementsArray[currRank]);
-        PIPE_WRITE(childId, optionalArgs.numOutputElementsArray[currRank]);
       }
 
 

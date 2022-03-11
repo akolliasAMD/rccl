@@ -203,8 +203,6 @@ namespace RcclUnitTesting
         PIPE_READ(optionalArgs.recvcounts[i]);
         PIPE_READ(optionalArgs.rdispls[i]);
       }
-      PIPE_READ(numInputElements);
-      PIPE_READ(numOutputElements);
     }
     if (globalRank < this->rankOffset || (this->rankOffset + comms.size() <= globalRank))
     {
@@ -585,7 +583,7 @@ namespace RcclUnitTesting
 
         CHECK_CALL(collArg.DeallocateMem());
       }
-      if (collArg.scalarMode != -1)
+      if (collArg.optionalArgs.scalarMode != -1)
       {
         CHILD_NCCL_CALL(ncclRedOpDestroy(collArg.redOp, this->comms[localRank]),
                         "ncclRedOpDestroy");

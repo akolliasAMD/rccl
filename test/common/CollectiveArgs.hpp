@@ -76,8 +76,8 @@ namespace RcclUnitTesting
 
   struct OptionalColArgs
   {
-    int      collId = -1;
-    int      rank = -1;
+    int      collId = -1; // remove
+    int      rank = -1; // remove
     PtrUnion scalarsPerRank = {nullptr};
     int      scalarMode = -1;
     // allToAllv args
@@ -85,8 +85,6 @@ namespace RcclUnitTesting
     size_t   sdispls[MAX_RANKS*MAX_RANKS];
     size_t   recvcounts[MAX_RANKS*MAX_RANKS];
     size_t   rdispls[MAX_RANKS*MAX_RANKS];
-    size_t   numInputElementsArray[MAX_RANKS];
-    size_t   numOutputElementsArray[MAX_RANKS];
   };
 
 
@@ -109,7 +107,7 @@ namespace RcclUnitTesting
     size_t          numOutputElements;
     ScalarTransport scalarTransport;   // Used for custom reduction operators
     PtrUnion        localScalar;
-    int             scalarMode;        // -1 if scalar not used
+    // int             scalarMode;        // -1 if scalar not used
 
     OptionalColArgs optionalArgs;
 

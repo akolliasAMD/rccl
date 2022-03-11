@@ -118,7 +118,7 @@ namespace RcclUnitTesting
 
       // Scale the temporary input by local scalar for this rank
       // (Used by custom reduction ops)
-      if (collArgs.scalarMode >= 0)
+      if (collArgs.optionalArgs.scalarMode >= 0)
       {
         CHECK_CALL(tempInputCpu.Scale(collArgs.dataType, collArgs.numInputElements,
                                       scalarsPerRank, rank));
@@ -230,7 +230,7 @@ namespace RcclUnitTesting
 
       // Scale the temporary input by local scalar for this rank
       // (Used by custom reduction ops)
-      if (collArgs.scalarMode >= 0)
+      if (collArgs.optionalArgs.scalarMode >= 0)
       {
         CHECK_CALL(tempInputCpu.Scale(collArgs.dataType, collArgs.numInputElements,
                                       scalarsPerRank, rank));
