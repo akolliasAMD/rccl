@@ -18,7 +18,7 @@ namespace RcclUnitTesting
     bool                        const  useManagedMem   = false;
 
     OptionalColArgs sendRecvCounts;
-    sendRecvCounts.collId = 0;
+    // sendRecvCounts.collId = 0;
     int numCollPerGroup = 0;
     bool isCorrect = true;
     int totalRanks = testBed.ev.maxGpus;
@@ -33,13 +33,15 @@ namespace RcclUnitTesting
       {
         for (int recvRank = 0; recvRank  < totalRanks; ++recvRank)
         {
-          sendRecvCounts.rank = sendRank;
+          sendRecvCounts.root = recvRank;
           testBed.SetCollectiveArgs(ncclCollSend,
                                     dataTypes[dataIdx],
-                                    ncclSum, // This should be moved to optional variables struct
-                                    recvRank,
+                                    // ncclSum, // This should be moved to optional variables struct
+                                    // recvRank,
                                     numElements[numIdx],
                                     numElements[numIdx],
+                                    0,
+                                    sendRank,
                                     sendRecvCounts);
           if (recvRank == 0)
           {
@@ -57,13 +59,15 @@ namespace RcclUnitTesting
                   recvRank,
                   numElements[numIdx]);
 
-            sendRecvCounts.rank = recvRank;
+            sendRecvCounts.root = sendRank;
             testBed.SetCollectiveArgs(ncclCollRecv,
                                       dataTypes[dataIdx],
-                                      ncclSum, // This should be moved to optional variables struct
-                                      sendRank,
+                                      // ncclSum, // This should be moved to optional variables struct
+                                      // sendRank,
                                       numElements[numIdx],
                                       numElements[numIdx],
+                                      0,
+                                      recvRank,
                                       sendRecvCounts);
             testBed.AllocateMem(inPlace, useManagedMem, -1, recvRank);
             testBed.PrepareData(-1, recvRank);

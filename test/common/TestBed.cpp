@@ -130,25 +130,27 @@ namespace RcclUnitTesting
 
   void TestBed::SetCollectiveArgs(ncclFunc_t      const funcType,
                                   ncclDataType_t  const dataType,
-                                  ncclRedOp_t     const redOp,
-                                  int             const root,
+                                  // ncclRedOp_t     const redOp,
+                                  // int             const root,
                                   size_t          const numInputElements,
                                   size_t          const numOutputElements,
+                                  int             const collId,
+                                  int             const rank,
                                   OptionalColArgs const &optionalArgs)
   {
     // Build list of ranks this applies to (-1 for rank means to set for all)
     std::vector<int> rankList;
     for (int i = 0; i < this->numActiveRanks; ++i)
-      if (optionalArgs.rank == -1 || optionalArgs.rank == i) rankList.push_back(i);
+      if (rank == -1 || rank == i) rankList.push_back(i);
 
     ScalarTransport scalarTransport;
     if (optionalArgs.scalarMode >= 0)
     {
-      ASSERT_TRUE(optionalArgs.scalarsPerRank.ptr != NULL);
+      ASSERT_TRUE(optionalArgs.localScalar.ptr != NULL);
 
       // Capture scalars per rank in format to share with child processes
       int const numBytes = this->numActiveRanks * DataTypeToBytes(dataType);
-      memcpy(scalarTransport.ptr, optionalArgs.scalarsPerRank.ptr, numBytes);
+      memcpy(scalarTransport.ptr, optionalArgs.localScalar.ptr, numBytes);
     }
 
     // Loop over all ranks and send CollectiveArgs to appropriate child process
@@ -158,11 +160,11 @@ namespace RcclUnitTesting
       int const childId = rankToChildMap[currRank];
       PIPE_WRITE(childId, cmd);
       PIPE_WRITE(childId, currRank);
-      PIPE_WRITE(childId, optionalArgs.collId);
+      PIPE_WRITE(childId, collId);
       PIPE_WRITE(childId, funcType);
       PIPE_WRITE(childId, dataType);
-      PIPE_WRITE(childId, redOp);
-      PIPE_WRITE(childId, root);
+      PIPE_WRITE(childId, optionalArgs.redOp);
+      PIPE_WRITE(childId, optionalArgs.root);
       PIPE_WRITE(childId, numInputElements);
       PIPE_WRITE(childId, numOutputElements);
       PIPE_WRITE(childId, optionalArgs.scalarMode);
@@ -392,7 +394,7 @@ namespace RcclUnitTesting
     // Sort numElements in descending order to cut down on # of allocations
     std::vector<int> sortedN = numElements;
     std::sort(sortedN.rbegin(), sortedN.rend());
-
+    OptionalColArgs optionalArgs;
     // Filter out any unsupported datatypes, in case only subset has been compiled for
     std::vector<ncclDataType_t> const& supportedDataTypes = this->GetAllSupportedDataTypes();
     std::vector<ncclDataType_t> dataTypes;
@@ -459,13 +461,15 @@ namespace RcclUnitTesting
                                                     totalRanks,
                                                     &numInputElements,
                                                     &numOutputElements);
-
+          optionalArgs.redOp = redOps[rdIdx];
+          optionalArgs.root = roots[rtIdx];
           this->SetCollectiveArgs(funcTypes[ftIdx],
                                   dataTypes[dtIdx],
-                                  redOps[rdIdx],
-                                  roots[rtIdx],
                                   numInputElements,
-                                  numOutputElements);
+                                  numOutputElements,
+                                  -1,
+                                  -1,
+                                  optionalArgs);
 
           // Only allocate once for largest size
           if (neIdx == 0) this->AllocateMem(inPlaceList[ipIdx], managedMemList[mmIdx]);

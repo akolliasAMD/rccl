@@ -171,8 +171,8 @@ namespace RcclUnitTesting
     int             collId;
     ncclFunc_t      funcType;
     ncclDataType_t  dataType;
-    ncclRedOp_t     redOp;
-    int             root;
+    // ncclRedOp_t     redOp;
+    // int             root;
     size_t          numInputElements;
     size_t          numOutputElements;
     ScalarTransport scalarTransport;
@@ -182,8 +182,8 @@ namespace RcclUnitTesting
     PIPE_READ(collId);
     PIPE_READ(funcType);
     PIPE_READ(dataType);
-    PIPE_READ(redOp);
-    PIPE_READ(root);
+    PIPE_READ(optionalArgs.redOp);
+    PIPE_READ(optionalArgs.root);
     PIPE_READ(numInputElements);
     PIPE_READ(numOutputElements);
     PIPE_READ(optionalArgs.scalarMode);
@@ -219,7 +219,7 @@ namespace RcclUnitTesting
         CollectiveArgs& collArg = this->collArgs[localRank][collIdx];
         CHECK_CALL(collArg.SetArgs(globalRank, this->totalRanks,
                                    this->deviceIds[localRank],
-                                   funcType, dataType, redOp, root,
+                                   funcType, dataType,
                                    numInputElements, numOutputElements,
                                    scalarTransport, optionalArgs));
         if (this->verbose) INFO("Rank %d on child %d sets collective %d [%s]\n",
@@ -230,7 +230,7 @@ namespace RcclUnitTesting
         if (optionalArgs.scalarMode >= 0)
         {
           CHILD_NCCL_CALL(ncclRedOpCreatePreMulSum(&collArg.redOp,
-                                                   collArg.localScalar.ptr,
+                                                   collArg.optionalArgs.localScalar.ptr,
                                                    dataType,
                                                    (ncclScalarResidence_t)optionalArgs.scalarMode,
                                                    this->comms[localRank]),

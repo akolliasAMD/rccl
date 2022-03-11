@@ -66,13 +66,14 @@ namespace RcclUnitTesting
         }
         for (int rank = 0; rank < totalRanks; ++rank)
         {
-          options.rank = rank;
           testBed.SetCollectiveArgs(ncclCollAllToAllv,
                                   dataTypes[dataIdx],
-                                  ncclSum, // This should be moved to optional variables struct
-                                  0, //does not affect anything
+                                  // ncclSum, // This should be moved to optional variables struct
+                                  // 0, //does not affect anything
                                   numInputElementsArray[rank],
                                   numOutputElementsArray[rank],
+                                  -1,
+                                  rank,
                                   options);
 
         }

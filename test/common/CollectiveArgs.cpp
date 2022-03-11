@@ -14,8 +14,8 @@ namespace RcclUnitTesting
                                   int             const  deviceId,
                                   ncclFunc_t      const  funcType,
                                   ncclDataType_t  const  dataType,
-                                  ncclRedOp_t     const  redOp,
-                                  int             const  root,
+                                  // ncclRedOp_t     const  redOp,
+                                  // int             const  root,
                                   size_t          const  numInputElements,
                                   size_t          const  numOutputElements,
                                   ScalarTransport const  scalarTransport,
@@ -24,10 +24,10 @@ namespace RcclUnitTesting
     // Free scalar based on previous scalarMode
     if (optionalColArgs.scalarMode != -1)
     {
-      if (this->localScalar.ptr != nullptr)
+      if (this->optionalArgs.localScalar.ptr != nullptr)
       {
-        if (this->optionalArgs.scalarMode == 0) this->localScalar.FreeGpuMem();
-        if (this->optionalArgs.scalarMode == 1) hipHostFree(this->localScalar.ptr);
+        if (this->optionalArgs.scalarMode == 0) this->optionalArgs.localScalar.FreeGpuMem();
+        if (this->optionalArgs.scalarMode == 1) hipHostFree(this->optionalArgs.localScalar.ptr);
       }
     }
 
@@ -36,36 +36,27 @@ namespace RcclUnitTesting
     this->deviceId          = deviceId;
     this->funcType          = funcType;
     this->dataType          = dataType;
-    this->redOp             = redOp;
-    this->root              = root;
+    // this->redOp             = redOp;
+    // this->root              = root;
     this->numInputElements  = numInputElements;
     this->numOutputElements = numOutputElements;
     this->scalarTransport   = scalarTransport;
-    this->optionalArgs.scalarMode        = optionalColArgs.scalarMode;
+    this->optionalArgs      = optionalColArgs;
+    // this->optionalArgs.scalarMode = optionalColArgs.scalarMode;
 
-    if (optionalColArgs.scalarMode != -1)
+    if (this->optionalArgs.scalarMode != -1)
     {
       size_t const numBytes = DataTypeToBytes(dataType);
-      if (optionalColArgs.scalarMode == ncclScalarDevice)
+      if (this->optionalArgs.scalarMode == ncclScalarDevice)
       {
-        CHECK_CALL(this->localScalar.AllocateGpuMem(numBytes));
-        CHECK_HIP(hipMemcpy(this->localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes),
+        CHECK_CALL(this->optionalArgs.localScalar.AllocateGpuMem(numBytes));
+        CHECK_HIP(hipMemcpy(this->optionalArgs.localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes),
                             numBytes, hipMemcpyHostToDevice));
       }
-      else if (optionalColArgs.scalarMode == ncclScalarHostImmediate)
+      else if (this->optionalArgs.scalarMode == ncclScalarHostImmediate)
       {
-        CHECK_HIP(hipHostMalloc(&this->localScalar.ptr, numBytes, 0));
-        memcpy(this->localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes), numBytes);
-      }
-    }
-    if (funcType == ncclCollAllToAllv)
-    {
-      for (int i = 0; i < this->totalRanks*this->totalRanks; ++i)
-      {
-        this->optionalArgs.sendcounts[i] = optionalColArgs.sendcounts[i];
-        this->optionalArgs.sdispls[i] = optionalColArgs.sdispls[i];
-        this->optionalArgs.recvcounts[i] = optionalColArgs.recvcounts[i];
-        this->optionalArgs.rdispls[i] = optionalColArgs.rdispls[i];
+        CHECK_HIP(hipHostMalloc(&this->optionalArgs.localScalar.ptr, numBytes, 0));
+        memcpy(this->optionalArgs.localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes), numBytes);
       }
     }
     return TEST_SUCCESS;
@@ -161,10 +152,10 @@ namespace RcclUnitTesting
     this->outputCpu.FreeCpuMem();
     this->expected.FreeCpuMem();
 
-    if (this->localScalar.ptr != nullptr)
+    if (this->optionalArgs.localScalar.ptr != nullptr)
     {
-      if (this->optionalArgs.scalarMode == 0) this->localScalar.FreeGpuMem();
-      if (this->optionalArgs.scalarMode == 1) CHECK_HIP(hipHostFree(this->localScalar.ptr));
+      if (this->optionalArgs.scalarMode == 0) this->optionalArgs.localScalar.FreeGpuMem();
+      if (this->optionalArgs.scalarMode == 1) CHECK_HIP(hipHostFree(this->optionalArgs.localScalar.ptr));
     }
     return TEST_SUCCESS;
   }
