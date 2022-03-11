@@ -194,16 +194,17 @@ namespace RcclUnitTesting
       scalarsPerRank.Attach(scalarTransport.ptr);
     }
 
-    if (funcType == ncclCollAllToAllv)
-    {
-      for (int i = 0; i < this->totalRanks*this->totalRanks; ++i)
-      {
-        PIPE_READ(optionalArgs.sendcounts[i]); //PIPE_READ(optionalArgs)
-        PIPE_READ(optionalArgs.sdispls[i]);
-        PIPE_READ(optionalArgs.recvcounts[i]);
-        PIPE_READ(optionalArgs.rdispls[i]);
-      }
-    }
+    PIPE_READ(optionalArgs);
+    // if (funcType == ncclCollAllToAllv)
+    // {
+    //   for (int i = 0; i < this->totalRanks*this->totalRanks; ++i)
+    //   {
+    //     PIPE_READ(optionalArgs.sendcounts[i]); //PIPE_READ(optionalArgs)
+    //     PIPE_READ(optionalArgs.sdispls[i]);
+    //     PIPE_READ(optionalArgs.recvcounts[i]);
+    //     PIPE_READ(optionalArgs.rdispls[i]);
+    //   }
+    // }
     if (globalRank < this->rankOffset || (this->rankOffset + comms.size() <= globalRank))
     {
       ERROR("Child %d does not contain rank %d\n", this->childId, globalRank);
