@@ -50,7 +50,6 @@ namespace RcclUnitTesting
                                       numElements[collIdx],
                                       collIdx,
                                       -1,
-                                      {nullptr},
                                       options);
           }
           testBed.AllocateMem(inPlace, useManagedMem);

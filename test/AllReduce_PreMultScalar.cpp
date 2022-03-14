@@ -39,9 +39,11 @@ namespace RcclUnitTesting
         for (int i = 0;  i < totalRanks; i++)
         {
           double F = i;
+
           scalarsPerRank.Set(dataType, i, i, F);
         }
-
+        int const numBytes = totalRanks * DataTypeToBytes(dataType);
+        memcpy(options.scalarTransport.ptr, scalarsPerRank.ptr, numBytes);
         // Test various scalar residence modes
         for (int scalarMode = 0; scalarMode <= 1 && isCorrect; ++scalarMode)
         {
@@ -53,10 +55,10 @@ namespace RcclUnitTesting
           for (int i = 0; i < numElements.size() && isCorrect; ++i)
           {
             options.scalarMode = scalarMode;
+            // options.scalarTransport = scalarsPerRank;
             options.redOp = redOp;
             testBed.SetCollectiveArgs(funcType, dataType,
                                       numElements[i], numElements[i], -1, -1,
-                                      scalarsPerRank,
                                       options);
             // For performance, only allocate and prepare data on largest size
             if (i == 0)

@@ -16,7 +16,7 @@ namespace RcclUnitTesting
                                   ncclDataType_t  const  dataType,
                                   size_t          const  numInputElements,
                                   size_t          const  numOutputElements,
-                                  ScalarTransport const  scalarTransport,
+                                  // ScalarTransport const  scalarTransport,
                                   OptionalColArgs const  &optionalColArgs)
   {
     // Free scalar based on previous scalarMode
@@ -36,7 +36,7 @@ namespace RcclUnitTesting
     this->dataType          = dataType;
     this->numInputElements  = numInputElements;
     this->numOutputElements = numOutputElements;
-    this->scalarTransport   = scalarTransport;
+    // this->scalarTransport   = scalarTransport;
     this->options           = optionalColArgs;
 
     if (this->options.scalarMode != -1)
@@ -45,13 +45,13 @@ namespace RcclUnitTesting
       if (this->options.scalarMode == ncclScalarDevice)
       {
         CHECK_CALL(this->localScalar.AllocateGpuMem(numBytes));
-        CHECK_HIP(hipMemcpy(this->localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes),
+        CHECK_HIP(hipMemcpy(this->localScalar.ptr, optionalColArgs.scalarTransport.ptr + (globalRank * numBytes),
                             numBytes, hipMemcpyHostToDevice));
       }
       else if (this->options.scalarMode == ncclScalarHostImmediate)
       {
         CHECK_HIP(hipHostMalloc(&this->localScalar.ptr, numBytes, 0));
-        memcpy(this->localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes), numBytes);
+        memcpy(this->localScalar.ptr, optionalColArgs.scalarTransport.ptr + (globalRank * numBytes), numBytes);
       }
     }
     return TEST_SUCCESS;

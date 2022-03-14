@@ -76,7 +76,6 @@ namespace RcclUnitTesting
                                   numOutputElementsArray[rank],
                                   -1,
                                   rank,
-                                  {nullptr},
                                   options);
 
         }

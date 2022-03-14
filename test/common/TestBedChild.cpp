@@ -173,7 +173,7 @@ namespace RcclUnitTesting
     ncclDataType_t  dataType;
     size_t          numInputElements;
     size_t          numOutputElements;
-    ScalarTransport scalarTransport;
+    // ScalarTransport scalarTransport;
     OptionalColArgs options;
 
     PIPE_READ(globalRank);
@@ -185,7 +185,7 @@ namespace RcclUnitTesting
     PIPE_READ(numInputElements);
     PIPE_READ(numOutputElements);
     // PIPE_READ(options.scalarMode);
-    PIPE_READ(scalarTransport);
+    // PIPE_READ(scalarTransport);
     // for (int i = 0; i < this->totalRanks; i++)
     // {
     //   PtrUnion scalarsPerRank;
@@ -209,7 +209,7 @@ namespace RcclUnitTesting
                                    this->deviceIds[localRank],
                                    funcType, dataType,
                                    numInputElements, numOutputElements,
-                                   scalarTransport, options));
+                                   options));
         if (this->verbose) INFO("Rank %d on child %d sets collective %d [%s]\n",
                                 globalRank, this->childId, collIdx,
                                 collArg.GetDescription().c_str());

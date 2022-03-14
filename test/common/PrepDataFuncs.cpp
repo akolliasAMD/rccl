@@ -101,7 +101,7 @@ namespace RcclUnitTesting
 
     // Loop over each rank and generate their input into a temp buffer, then reduce
     PtrUnion scalarsPerRank;
-    scalarsPerRank.Attach(collArgs.scalarTransport.ptr);
+    scalarsPerRank.Attach(collArgs.options.scalarTransport.ptr);
 
     PtrUnion tempInputCpu;
     CHECK_CALL(tempInputCpu.Attach(collArgs.outputCpu));
@@ -212,7 +212,7 @@ namespace RcclUnitTesting
 
     // Loop over each rank and generate the input / scale / reduce
     PtrUnion scalarsPerRank;
-    scalarsPerRank.Attach(collArgs.scalarTransport.ptr);
+    scalarsPerRank.Attach(collArgs.options.scalarTransport.ptr);
     for (int rank = 0; rank < collArgs.totalRanks; ++rank)
     {
       CHECK_CALL(tempInputCpu.FillPattern(collArgs.dataType, collArgs.numInputElements, rank, false));
