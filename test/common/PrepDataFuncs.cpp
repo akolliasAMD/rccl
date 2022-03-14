@@ -351,12 +351,14 @@ namespace RcclUnitTesting
 
     // calculating maxBytes as the maximum number of input bytes out of all the ranks
     size_t maxBytes = 0;
-    for (int rank = 0; rank < collArgs.totalRanks; ++rank)
+    for (int baseRank = 0; baseRank < collArgs.totalRanks; ++baseRank)
+    for (int offsetRank = 0; offsetRank < collArgs.totalRanks; ++offsetRank)
     {
-      size_t rankSendCount = collArgs.optionalArgs.sdispls[(rank+ 1)*collArgs.totalRanks - 1] + collArgs.optionalArgs.sendcounts[(rank+ 1)*collArgs.totalRanks - 1];
+      size_t rankSendCount = collArgs.optionalArgs.sdispls[(baseRank)*collArgs.totalRanks+offsetRank] + collArgs.optionalArgs.sendcounts[(baseRank)*collArgs.totalRanks+offsetRank];
       if (maxBytes < rankSendCount)
-        maxBytes = rankSendCount*DataTypeToBytes(collArgs.dataType);
+        maxBytes = rankSendCount;
     }
+    maxBytes = maxBytes*DataTypeToBytes(collArgs.dataType);
 
     // Clear outputs on all ranks (prior to input in case of in-place)
     collArgs.outputGpu.ClearGpuMem(numOutputBytes);
@@ -377,7 +379,6 @@ namespace RcclUnitTesting
       memcpy(collArgs.expected.U1 + recvDspls, tempInput.U1 + rankDspls, numBytes);
 
     }
-
     tempInput.FillPattern(collArgs.dataType, collArgs.numInputElements, collArgs.globalRank, false);
 
     CHECK_HIP(hipMemcpy(collArgs.inputGpu.ptr, tempInput.ptr, numInputBytes, hipMemcpyHostToDevice));

@@ -191,7 +191,6 @@ namespace RcclUnitTesting
       PtrUnion scalarsPerRank;
       scalarsPerRank.Attach(scalarTransport.ptr);
     }
-
     PIPE_READ(optionalArgs);
     if (globalRank < this->rankOffset || (this->rankOffset + comms.size() <= globalRank))
     {
