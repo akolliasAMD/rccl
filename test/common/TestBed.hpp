@@ -47,6 +47,7 @@ namespace RcclUnitTesting
                            size_t          const numOutputElements,
                            int             const collId = -1,
                            int             const rank = -1,
+                           PtrUnion        const scalarsPerRank = {nullptr},
                            OptionalColArgs const &optionalArgs = {});
 
 

@@ -78,7 +78,7 @@ namespace RcclUnitTesting
   {
     ncclRedOp_t redOp = ncclSum;
     int         root = 0; // Used as "peer" for Send/Recv
-    PtrUnion    localScalar = {nullptr};
+    // PtrUnion    localScalar = {nullptr};
     int         scalarMode = -1; // -1 if scalar not used
     // allToAllv args
     size_t      sendcounts[MAX_RANKS*MAX_RANKS];
@@ -104,7 +104,8 @@ namespace RcclUnitTesting
     size_t          numInputElements;
     size_t          numOutputElements;
     ScalarTransport scalarTransport;   // Used for custom reduction operators
-    OptionalColArgs optionalArgs;
+    PtrUnion        localScalar;
+    OptionalColArgs options;
 
     // Data
     PtrUnion       inputGpu;

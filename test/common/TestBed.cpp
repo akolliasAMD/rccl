@@ -134,6 +134,7 @@ namespace RcclUnitTesting
                                   size_t          const numOutputElements,
                                   int             const collId,
                                   int             const rank,
+                                  PtrUnion        const scalarsPerRank,
                                   OptionalColArgs const &optionalArgs)
   {
     // Build list of ranks this applies to (-1 for rank means to set for all)
@@ -144,11 +145,11 @@ namespace RcclUnitTesting
     ScalarTransport scalarTransport;
     if (optionalArgs.scalarMode >= 0)
     {
-      ASSERT_TRUE(optionalArgs.localScalar.ptr != NULL);
+      ASSERT_TRUE(scalarsPerRank.ptr != NULL);
 
       // Capture scalars per rank in format to share with child processes
       int const numBytes = this->numActiveRanks * DataTypeToBytes(dataType);
-      memcpy(scalarTransport.ptr, optionalArgs.localScalar.ptr, numBytes);
+      memcpy(scalarTransport.ptr, scalarsPerRank.ptr, numBytes);
     }
 
     // Loop over all ranks and send CollectiveArgs to appropriate child process
@@ -165,7 +166,7 @@ namespace RcclUnitTesting
       PIPE_WRITE(childId, optionalArgs.root);
       PIPE_WRITE(childId, numInputElements);
       PIPE_WRITE(childId, numOutputElements);
-      PIPE_WRITE(childId, optionalArgs.scalarMode);
+      // PIPE_WRITE(childId, optionalArgs.scalarMode);
       PIPE_WRITE(childId, scalarTransport);
       PIPE_WRITE(childId, optionalArgs);
       PIPE_CHECK(childId);
@@ -456,6 +457,7 @@ namespace RcclUnitTesting
                                   numOutputElements,
                                   -1,
                                   -1,
+                                  {nullptr},
                                   optionalArgs);
 
           // Only allocate once for largest size

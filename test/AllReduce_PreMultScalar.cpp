@@ -41,8 +41,7 @@ namespace RcclUnitTesting
           double F = i;
           scalarsPerRank.Set(dataType, i, i, F);
         }
-        //AKOLLIAS copy this to ptr ScalarTransport (change on collectiveArgs hpp scalartransport to scalars per rank in options)
-        // get rid of localScalar
+
         // Test various scalar residence modes
         for (int scalarMode = 0; scalarMode <= 1 && isCorrect; ++scalarMode)
         {
@@ -53,11 +52,11 @@ namespace RcclUnitTesting
 
           for (int i = 0; i < numElements.size() && isCorrect; ++i)
           {
-            options.localScalar.Attach(scalarsPerRank);
             options.scalarMode = scalarMode;
             options.redOp = redOp;
             testBed.SetCollectiveArgs(funcType, dataType,
                                       numElements[i], numElements[i], -1, -1,
+                                      scalarsPerRank,
                                       options);
             // For performance, only allocate and prepare data on largest size
             if (i == 0)

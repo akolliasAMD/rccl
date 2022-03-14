@@ -22,10 +22,10 @@ namespace RcclUnitTesting
     // Free scalar based on previous scalarMode
     if (optionalColArgs.scalarMode != -1)
     {
-      if (this->optionalArgs.localScalar.ptr != nullptr)
+      if (this->localScalar.ptr != nullptr)
       {
-        if (this->optionalArgs.scalarMode == 0) this->optionalArgs.localScalar.FreeGpuMem();
-        if (this->optionalArgs.scalarMode == 1) hipHostFree(this->optionalArgs.localScalar.ptr);
+        if (this->options.scalarMode == 0) this->localScalar.FreeGpuMem();
+        if (this->options.scalarMode == 1) hipHostFree(this->localScalar.ptr);
       }
     }
 
@@ -37,21 +37,21 @@ namespace RcclUnitTesting
     this->numInputElements  = numInputElements;
     this->numOutputElements = numOutputElements;
     this->scalarTransport   = scalarTransport;
-    this->optionalArgs      = optionalColArgs;
+    this->options           = optionalColArgs;
 
-    if (this->optionalArgs.scalarMode != -1)
+    if (this->options.scalarMode != -1)
     {
       size_t const numBytes = DataTypeToBytes(dataType);
-      if (this->optionalArgs.scalarMode == ncclScalarDevice)
+      if (this->options.scalarMode == ncclScalarDevice)
       {
-        CHECK_CALL(this->optionalArgs.localScalar.AllocateGpuMem(numBytes));
-        CHECK_HIP(hipMemcpy(this->optionalArgs.localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes),
+        CHECK_CALL(this->localScalar.AllocateGpuMem(numBytes));
+        CHECK_HIP(hipMemcpy(this->localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes),
                             numBytes, hipMemcpyHostToDevice));
       }
-      else if (this->optionalArgs.scalarMode == ncclScalarHostImmediate)
+      else if (this->options.scalarMode == ncclScalarHostImmediate)
       {
-        CHECK_HIP(hipHostMalloc(&this->optionalArgs.localScalar.ptr, numBytes, 0));
-        memcpy(this->optionalArgs.localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes), numBytes);
+        CHECK_HIP(hipHostMalloc(&this->localScalar.ptr, numBytes, 0));
+        memcpy(this->localScalar.ptr, scalarTransport.ptr + (globalRank * numBytes), numBytes);
       }
     }
     return TEST_SUCCESS;
@@ -112,7 +112,7 @@ namespace RcclUnitTesting
   ErrCode CollectiveArgs::ValidateResults()
   {
     // Ignore non-root outputs for collectives with a root
-    if (CollectiveArgs::UsesRoot(this->funcType) && this->optionalArgs.root != this->globalRank) return TEST_SUCCESS;
+    if (CollectiveArgs::UsesRoot(this->funcType) && this->options.root != this->globalRank) return TEST_SUCCESS;
 
     size_t const numOutputBytes = (this->numOutputElements * DataTypeToBytes(this->dataType));
 
@@ -147,10 +147,10 @@ namespace RcclUnitTesting
     this->outputCpu.FreeCpuMem();
     this->expected.FreeCpuMem();
 
-    if (this->optionalArgs.localScalar.ptr != nullptr)
+    if (this->localScalar.ptr != nullptr)
     {
-      if (this->optionalArgs.scalarMode == 0) this->optionalArgs.localScalar.FreeGpuMem();
-      if (this->optionalArgs.scalarMode == 1) CHECK_HIP(hipHostFree(this->optionalArgs.localScalar.ptr));
+      if (this->options.scalarMode == 0) this->localScalar.FreeGpuMem();
+      if (this->options.scalarMode == 1) CHECK_HIP(hipHostFree(this->localScalar.ptr));
     }
     return TEST_SUCCESS;
   }
@@ -181,9 +181,9 @@ namespace RcclUnitTesting
         this->funcType == ncclCollReduceScatter ||
         this->funcType == ncclCollAllReduce)
     {
-      if (this->optionalArgs.redOp < ncclNumOps)
+      if (this->options.redOp < ncclNumOps)
       {
-        ss << ncclRedOpNames[this->optionalArgs.redOp] << " ";
+        ss << ncclRedOpNames[this->options.redOp] << " ";
       }
       else
       {
@@ -212,13 +212,13 @@ namespace RcclUnitTesting
         this->funcType == ncclCollGather ||
         this->funcType == ncclCollScatter)
     {
-      ss << "Root " << this->optionalArgs.root << " ";
+      ss << "Root " << this->options.root << " ";
     }
 
     if (this->funcType == ncclCollSend ||
         this->funcType == ncclCollRecv)
     {
-      ss << "Peer " << this->optionalArgs.root << " ";
+      ss << "Peer " << this->options.root << " ";
     }
 
     ss << "#In: " << this->numInputElements;
