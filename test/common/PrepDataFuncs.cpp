@@ -363,7 +363,6 @@ namespace RcclUnitTesting
     // Clear outputs on all ranks (prior to input in case of in-place)
     collArgs.outputGpu.ClearGpuMem(numOutputBytes);
 
-
     // Generate input on root rank - each rank will receive a portion
     PtrUnion tempInput;
     tempInput.AllocateCpuMem(maxBytes);
