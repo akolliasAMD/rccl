@@ -186,11 +186,11 @@ namespace RcclUnitTesting
     PIPE_READ(numOutputElements);
     // PIPE_READ(options.scalarMode);
     PIPE_READ(scalarTransport);
-    for (int i = 0; i < this->totalRanks; i++)
-    {
-      PtrUnion scalarsPerRank;
-      scalarsPerRank.Attach(scalarTransport.ptr);
-    }
+    // for (int i = 0; i < this->totalRanks; i++)
+    // {
+    //   PtrUnion scalarsPerRank;
+    //   scalarsPerRank.Attach(scalarTransport.ptr);
+    // }
     PIPE_READ(options);
     if (globalRank < this->rankOffset || (this->rankOffset + comms.size() <= globalRank))
     {
