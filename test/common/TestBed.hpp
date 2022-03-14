@@ -45,10 +45,9 @@ namespace RcclUnitTesting
                            ncclDataType_t  const dataType,
                            size_t          const numInputElements,
                            size_t          const numOutputElements,
+                           OptionalColArgs const &optionalArgs = {},
                            int             const collId = -1,
-                           int             const rank = -1,
-                           // PtrUnion        const scalarsPerRank = {nullptr},
-                           OptionalColArgs const &optionalArgs = {});
+                           int             const rank = -1);
 
 
 

@@ -132,25 +132,14 @@ namespace RcclUnitTesting
                                   ncclDataType_t  const dataType,
                                   size_t          const numInputElements,
                                   size_t          const numOutputElements,
+                                  OptionalColArgs const &optionalArgs,
                                   int             const collId,
-                                  int             const rank,
-                                  // PtrUnion        const scalarsPerRank,
-                                  OptionalColArgs const &optionalArgs)
+                                  int             const rank)
   {
     // Build list of ranks this applies to (-1 for rank means to set for all)
     std::vector<int> rankList;
     for (int i = 0; i < this->numActiveRanks; ++i)
       if (rank == -1 || rank == i) rankList.push_back(i);
-
-    // ScalarTransport scalarTransport;
-    // if (optionalArgs.scalarMode >= 0)
-    // {
-    //   ASSERT_TRUE(scalarsPerRank.ptr != NULL);
-
-    //   // Capture scalars per rank in format to share with child processes
-    //   int const numBytes = this->numActiveRanks * DataTypeToBytes(dataType);
-    //   memcpy(scalarTransport.ptr, scalarsPerRank.ptr, numBytes);
-    // }
 
     // Loop over all ranks and send CollectiveArgs to appropriate child process
     int const cmd = TestBedChild::CHILD_SET_COLL_ARGS;
@@ -166,8 +155,6 @@ namespace RcclUnitTesting
       PIPE_WRITE(childId, optionalArgs.root);
       PIPE_WRITE(childId, numInputElements);
       PIPE_WRITE(childId, numOutputElements);
-      // PIPE_WRITE(childId, optionalArgs.scalarMode);
-      // PIPE_WRITE(childId, scalarTransport);
       PIPE_WRITE(childId, optionalArgs);
       PIPE_CHECK(childId);
     }
@@ -455,8 +442,6 @@ namespace RcclUnitTesting
                                   dataTypes[dtIdx],
                                   numInputElements,
                                   numOutputElements,
-                                  -1,
-                                  -1,
                                   optionalArgs);
 
           // Only allocate once for largest size

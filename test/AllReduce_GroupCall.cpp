@@ -48,9 +48,8 @@ namespace RcclUnitTesting
                                       dataTypes[dataIdx],
                                       numElements[collIdx],
                                       numElements[collIdx],
-                                      collIdx,
-                                      -1,
-                                      options);
+                                      options,
+                                      collIdx);
           }
           testBed.AllocateMem(inPlace, useManagedMem);
           testBed.PrepareData();

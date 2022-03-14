@@ -37,9 +37,9 @@ namespace RcclUnitTesting
                                     dataTypes[dataIdx],
                                     numElements[numIdx],
                                     numElements[numIdx],
+                                    options,
                                     0,
-                                    sendRank,
-                                    options);
+                                    sendRank);
           if (recvRank == 0)
           {
 
@@ -61,9 +61,9 @@ namespace RcclUnitTesting
                                       dataTypes[dataIdx],
                                       numElements[numIdx],
                                       numElements[numIdx],
+                                      options,
                                       0,
-                                      recvRank,
-                                      options);
+                                      recvRank);
             testBed.AllocateMem(inPlace, useManagedMem, -1, recvRank);
             testBed.PrepareData(-1, recvRank);
             testBed.ExecuteCollectives({sendRank, recvRank});

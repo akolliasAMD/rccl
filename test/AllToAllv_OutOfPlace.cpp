@@ -74,9 +74,9 @@ namespace RcclUnitTesting
                                   dataTypes[dataIdx],
                                   numInputElementsArray[rank],
                                   numOutputElementsArray[rank],
+                                  options,
                                   -1,
-                                  rank,
-                                  options);
+                                  rank);
 
         }
         testBed.AllocateMem(inPlace, useManagedMem);

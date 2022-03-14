@@ -126,7 +126,6 @@ namespace RcclUnitTesting
                     ncclDataType_t  const dataType,
                     size_t          const numInputElements,
                     size_t          const numOutputElements,
-                    // ScalarTransport const scalarsPerRank,
                     OptionalColArgs const &optionalArgs = {});
 
     // Allocates GPU memory for input/output and CPU memory for expected

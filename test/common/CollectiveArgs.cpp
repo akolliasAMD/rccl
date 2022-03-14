@@ -16,7 +16,6 @@ namespace RcclUnitTesting
                                   ncclDataType_t  const  dataType,
                                   size_t          const  numInputElements,
                                   size_t          const  numOutputElements,
-                                  // ScalarTransport const  scalarTransport,
                                   OptionalColArgs const  &optionalColArgs)
   {
     // Free scalar based on previous scalarMode
@@ -36,7 +35,6 @@ namespace RcclUnitTesting
     this->dataType          = dataType;
     this->numInputElements  = numInputElements;
     this->numOutputElements = numOutputElements;
-    // this->scalarTransport   = scalarTransport;
     this->options           = optionalColArgs;
 
     if (this->options.scalarMode != -1)
