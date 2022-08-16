@@ -55,8 +55,23 @@ ncclResult_t ncclTopoPreset(struct ncclComm* comm,
         topoRanks->treeToParent[c] = treeIntra[parentIndex];
         topoRanks->treeToChild0[c] = treeIntra[child0Index];
         topoRanks->treeToChild1[c] = treeIntra[child1Index];
-        channel->tree.up         = i == 0 ? -1 : treeIntra[i-1];
-        channel->tree.down[0]    = i == localRanks-1 ? -1 : treeIntra[i+1];
+        if (i == 0) {
+          channel->tree.up = -1;
+          channel->tree.down[0] = treeIntra[i+1];
+          channel->tree.down[1] = treeIntra[localRanks-1];
+          channel->tree.down[2] = -1;
+        }
+        else {
+          channel->tree.up         = i > localRanks/2 ?  treeIntra[(i+1)%localRanks] : treeIntra[i-1];
+          channel->tree.down[0]    = i > localRanks/2 ?  treeIntra[i-1] : treeIntra[i+1];
+          if ((i == localRanks/2) || (i == (localRanks/2 + 1))) {
+            channel->tree.down[0]    = -1;
+          }
+          channel->tree.down[1]    = -1;
+          channel->tree.down[2] = -1;
+        }
+        // channel->tree.up         = i == 0 ? -1 : treeIntra[i-1];
+        // channel->tree.down[0]    = i == localRanks-1 ? -1 : treeIntra[i+1];
       }
     }
     topoRanks->ringPrev[c] = channel->ring.prev;
