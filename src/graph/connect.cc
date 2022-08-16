@@ -40,6 +40,14 @@ ncclResult_t ncclTopoPreset(struct ncclComm* comm,
     int* ringIntra = ringGraph->intra+c*localRanks;
     int* treeIntra = treeGraph->intra+c*localRanks;
 
+    int buff = c%6;
+    int tempArray[256]; // maybe just copy the whole thing
+    for (int ko=0; ko < localRanks; ko++){
+      tempArray[ko] = treeIntra[(ko+buff)%localRanks];
+    }
+    for (int ko=0; ko < localRanks; ko++){
+      treeIntra[ko]=tempArray[ko];
+    }
     for (int i=0; i<localRanks; i++) {
       if (ringIntra[i] == rank) {
         topoRanks->ringRecv[c] = ringIntra[0];
@@ -47,6 +55,7 @@ ncclResult_t ncclTopoPreset(struct ncclComm* comm,
         channel->ring.prev = (i == 0) ? -1 : ringIntra[i-1];
         channel->ring.next = (i == localRanks-1) ? -1 : ringIntra[i+1];
       }
+
       if (treeIntra[i] == rank) {
         int parentIndex = 0;
         int child0Index = treeGraph->pattern == NCCL_TOPO_PATTERN_TREE ? 0 : 1;
@@ -55,21 +64,27 @@ ncclResult_t ncclTopoPreset(struct ncclComm* comm,
         topoRanks->treeToParent[c] = treeIntra[parentIndex];
         topoRanks->treeToChild0[c] = treeIntra[child0Index];
         topoRanks->treeToChild1[c] = treeIntra[child1Index];
-        if (i == 0) {
-          channel->tree.up = -1;
-          channel->tree.down[0] = treeIntra[i+1];
-          channel->tree.down[1] = treeIntra[localRanks-1];
-          channel->tree.down[2] = -1;
-        }
-        else {
-          channel->tree.up         = i > localRanks/2 ?  treeIntra[(i+1)%localRanks] : treeIntra[i-1];
-          channel->tree.down[0]    = i > localRanks/2 ?  treeIntra[i-1] : treeIntra[i+1];
-          if ((i == localRanks/2) || (i == (localRanks/2 + 1))) {
-            channel->tree.down[0]    = -1;
-          }
-          channel->tree.down[1]    = -1;
-          channel->tree.down[2] = -1;
-        }
+
+
+        channel->tree.up = (i-1)/2 > -1 ? treeIntra[(i-1)/2] : -1;
+        channel->tree.down[0] = 2*i+1 > (localRanks-1) ? -1 : treeIntra[2*i+1];
+        channel->tree.down[1] = 2*i+2 > (localRanks-1) ? -1 : treeIntra[2*i+2];
+        channel->tree.down[2] = -1;
+        // if (i == 0) {
+        //   channel->tree.up = -1;
+        //   channel->tree.down[0] = treeIntra[i+1];
+        //   channel->tree.down[1] = treeIntra[localRanks-1];
+        //   channel->tree.down[2] = -1;
+        // }
+        // else {
+        //   channel->tree.up         = i > localRanks/2 ?  treeIntra[(i+1)%localRanks] : treeIntra[i-1];
+        //   channel->tree.down[0]    = i > localRanks/2 ?  treeIntra[i-1] : treeIntra[i+1];
+        //   if ((i == localRanks/2) || (i == (localRanks/2 + 1))) {
+        //     channel->tree.down[0]    = -1;
+        //   }
+        //   channel->tree.down[1]    = -1;
+        //   channel->tree.down[2] = -1;
+        // }
         // channel->tree.up         = i == 0 ? -1 : treeIntra[i-1];
         // channel->tree.down[0]    = i == localRanks-1 ? -1 : treeIntra[i+1];
       }
