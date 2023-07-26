@@ -181,7 +181,9 @@ def parse_cpu_event_file(npkit_dump_dir, npkit_event_def, rank, channel, cpu_clo
 
         while raw_content_idx < raw_content_size:
             parsed_cpu_event = parse_cpu_event(raw_content[raw_content_idx : raw_content_idx + raw_event_size])
+            unfiltered_events.insert(0, parsed_cpu_event)
             event_type = npkit_event_def['id_to_type'][parsed_cpu_event['id']]
+            # print(event_type)
             phase = 'B' if event_type.endswith('_ENTRY') else 'E'
             cpu_events.append({
                 'ph': phase,
@@ -223,12 +225,23 @@ def parse_cpu_event_file(npkit_dump_dir, npkit_event_def, rank, channel, cpu_clo
                 slot_to_fiber_id.pop(slot)
                 last_ts = fiber_open_ts[fiber_id]
                 fiber_is_usable[fiber_id] = True
-
-                delta_time = max(0.001, cpu_events[-1]['ts'] - last_ts)
+                count = 0
+                current_id = parsed_cpu_event['id']
+                test =[]
+                for i in unfiltered_events:
+                    if i['id'] == (current_id-1):
+                        event_start_ts = i['timestamp'] / cpu_clock_scale
+                        break
+                    count +=1
+                if count < len(unfiltered_events):
+                    test = unfiltered_events.pop(count)
+                delta_time = max(0.001, cpu_events[-1]['ts'] - event_start_ts)
                 cpu_events[-1]['args'] = {'size': parsed_cpu_event['size']}
                 cpu_events[-1]['args']['bw (GB/s)'] = \
                 cpu_events[-1]['args']['size'] / delta_time / 1e3
-
+                # event_type1 = npkit_event_def['id_to_type'][test['id']]
+                # if event_type1 == 'NPKIT_EVENT_NET_TEST_ENTRY':
+                    # print(cpu_events[-1]['ts'], event_start_ts, delta_time, ' test')
             cpu_events[-1]['tid'] = fiber_id + (channel + 1) * channel_shift
 
             raw_content_idx += raw_event_size
