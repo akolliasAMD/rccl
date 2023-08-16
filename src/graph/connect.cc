@@ -89,13 +89,14 @@ ncclResult_t ncclTreeBasePostset(struct ncclComm* comm,
   int localRanks = comm->topo->nodes[GPU].count;
   //new tree
   for (int c=0; c<nChannels; c++) {
-        // int* treeIntra = treeGraph->intra+c%3*localRanks;
+
+    // int* treeIntra = treeGraph->intra+c%3*localRanks;
     // int buff = ((c%6)*localRanks)/6 + ((localRanks/4)*(c/6));
     int buff = c%x;
     int tempArray[256];
     for (int ko=0; ko < localRanks; ko++){
       // tempArray[ko] = treeIntra[(ko+buff)%localRanks];
-      tempArray[ko] = treeGraph->treeBase[buff][(ko+3)%localRanks];
+      tempArray[ko] = treeGraph->treeBase[buff][(ko+localRanks/2)%localRanks];
     }
 
     struct ncclChannel* channel = comm->channels+c;
