@@ -342,7 +342,8 @@ static struct rcclRomeModel rome_model_43 = {
   .gdrLevel = { },
   .pattern = "20202020",
   .ringBase = "0 1 2 3 4 5 6 7|0 2 5 7 4 6 1 3|0 3 1 6 4 7 5 2|0 7 6 5 4 3 2 1",
-  .options = "",
+  .options = "treeDefined=1",
+  .treeBase = "1 0 3 2 5 6 7 4|3 1 0 2 5 7 6 4|0 3 1 2 5 7 4 6|5 4 7 6 1 0 2 3|7 5 4 6 1 2 0 3|4 7 5 6 1 0 3 2|0 3 2 1 6 7 5 4|0 2 3 1 6 4 7 5|2 0 3 1 6 5 4 7|7 6 4 5 2 3 1 0|7 4 6 5 2 0 3 1|6 7 4 5 2 1 0 3",
 };
 
 static struct rcclRomeModel rome_model_55 = {
@@ -579,20 +580,6 @@ static struct rcclRomeModel rome_model_81 = {
   .options = "noCpuCheck=1",
 };
 
-static struct rcclRomeModel rome_model_82 = {
-  .nGpus = 8, .nCpus = 4, .nNics = 0, .nLinks = 3,
-  .gpuIds = { 0x63000, 0x43000, 0x27000, 0x3000, 0xe3000, 0xc3000, 0xa3000, 0x83000, },
-  .nicIds = { },
-  .gpuNuma = { 0, 0, 1, 1, 2, 2, 3, 3, },
-  .nicNuma = { },
-  .connMatrix = { 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, },
-  .gdrLevel = { },
-  .pattern = "20202020",
-  .ringBase = "",
-  .options = "treeDefined=1",
-  .treeBase = "1 0 3 2 5 6 7 4|3 1 0 2 5 7 6 4|0 3 1 2 5 7 4 6|5 4 7 6 1 0 2 3|7 5 4 6 1 2 0 3|4 7 5 6 1 0 3 2|0 3 2 1 6 7 5 4|0 2 3 1 6 4 7 5|2 0 3 1 6 5 4 7|7 6 4 5 2 3 1 0|7 4 6 5 2 0 3 1|6 7 4 5 2 1 0 3",
-};
-
 static struct rcclRomeModel romeTopoModels[] = {
   rome_model_22,
   rome_model_25,
@@ -635,7 +622,6 @@ static struct rcclRomeModel romeTopoModels[] = {
   rome_model_79,
   rome_model_80,
   rome_model_81,
-  rome_model_82,
 };
 
 /* Parse user defined rings. Format is like :
@@ -1293,6 +1279,7 @@ ncclResult_t parseRome4P2H(struct ncclTopoSystem* system, struct ncclTopoGraph* 
 
   // create 4P2H based on reference and remapped ids
   NCCLCHECK(parseGraph(romeTopoModels[i].ringBase, system, graph, g, nnets > 1 ? n : NULL));
+  NCCLCHECK(parseGraphLight(romeTopoModels[i].ringBase, system, graph, NULL));
   return ncclSuccess;
 }
 
@@ -1427,7 +1414,7 @@ ncclResult_t parse1H16P(struct ncclTopoSystem* system, struct ncclTopoGraph* gra
   // create 16P1H based on reference and remapped ids
   NCCLCHECK(parseGraph(romeTopoModels[i].ringBase, system, graph, g16, nnets > 1 ? n : NULL));
 
-  // NCCLCHECK(parseGraphLight(romeTopoModels[i].treeBase, system, graph, g16));
+  NCCLCHECK(parseGraphLight(romeTopoModels[i].treeBase, system, graph, g16));
   // clean up
   free(all_gpu_permutations);
   return ncclSuccess;
