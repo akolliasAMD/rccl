@@ -908,10 +908,10 @@ ncclResult_t ncclTopoCompute(ncclTopoSystem* system, struct ncclTopoGraph* graph
     // try to match 4H4P
     NCCLCHECK(parse4H4P(system, graph));
   }
-  str = getenv("NCCL_TREES");
-  if (str) {
+  char* strTrees = getenv("NCCL_TREES");
+  if (strTrees) {
     // user supplied topo
-    NCCLCHECK(parseGraphLight(str, system, graph, NULL));
+    NCCLCHECK(parseGraphLight(strTrees, system, graph, NULL));
     system->treeDefined=true;
   }
   if (graph->nChannels) return ncclSuccess;
