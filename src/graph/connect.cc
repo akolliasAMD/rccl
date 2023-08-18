@@ -84,7 +84,7 @@ ncclResult_t ncclTreeBasePostset(struct ncclComm* comm,
   {
     y=i+1;
   }
-  if( graph->treeBase[0][0] == -1) return ncclSuccess;
+  if( treeGraph->treeBase[0][0] == -1) return ncclSuccess;
   int nChannels = comm->nChannels;
   int localRanks = comm->topo->nodes[GPU].count;
   //new tree
