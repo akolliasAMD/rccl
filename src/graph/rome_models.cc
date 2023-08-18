@@ -760,7 +760,7 @@ ncclResult_t parseGraphLight(const char* str, struct ncclTopoSystem* system, str
   int gpu = 0;
   int offset = 0;
   if (str[0] == 0) {
-    graph->treeBase[0][0] = -1
+    graph->treeBase[0][0] = -1;
     return ncclSuccess;
   }
   int status = 0; // 0 : between numbers, 1 : inside number, 2: start NET, 3: inside NET
