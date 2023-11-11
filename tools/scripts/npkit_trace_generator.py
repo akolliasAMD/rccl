@@ -98,7 +98,7 @@ def parse_gpu_event_file_time(testXcidDictionary, npkit_dump_dir, npkit_event_de
             raw_content_idx += raw_event_size
     return len(testXcidDictionary)
 
-def parse_gpu_event_file(rank_cpu_time, npkit_dump_dir, npkit_event_def, rank, buf_idx, gpu_clock_scale, cpu_clock_scale, dictionary_of_stats, warmup_runs=5):
+def parse_gpu_event_file(rank_cpu_time_xcid, npkit_dump_dir, npkit_event_def, rank, buf_idx, gpu_clock_scale, cpu_clock_scale, dictionary_of_stats, warmup_runs=5):
     gpu_event_file_path = os.path.join(npkit_dump_dir, 'gpu_events_rank_%d_buf_%d' % (rank, buf_idx))
     stats_key = 'gpu_rank_%d' % (rank)
     channel_stats = {}
@@ -136,7 +136,7 @@ def parse_gpu_event_file(rank_cpu_time, npkit_dump_dir, npkit_event_def, rank, b
             unfiltered_events.insert(0, parsed_gpu_event)
             if npkit_event_def['id_to_type'][parsed_gpu_event['id']] == 'NPKIT_EVENT_TIME_SYNC_CPU':
                 # curr_cpu_base_time = parsed_gpu_event['timestamp'] / cpu_clock_scale
-                curr_cpu_base_time = rank_cpu_time / cpu_clock_scale
+                curr_cpu_base_time = rank_cpu_time_xcid[parsed_gpu_event['rsvd']] / cpu_clock_scale
                 curr_gpu_base_time = None
             elif npkit_event_def['id_to_type'][parsed_gpu_event['id']] == 'NPKIT_EVENT_TIME_SYNC_GPU':
                 if curr_gpu_base_time is None:
@@ -299,18 +299,20 @@ def convert_npkit_dump_to_trace(npkit_dump_dir, output_dir, npkit_event_def, gpu
         gpu_clock_scale = parse_gpu_clock_scale(gpu_clock_file_path)
 
         testXcidDictionary = {}
+        avg_time = {}
+        number_events=0
         for buf_idx in buf_indices: # get the avg time
             parse_gpu_event_file_time(testXcidDictionary, npkit_dump_dir, npkit_event_def, rank, buf_idx, gpu_clock_scale, cpu_clock_scale, dictionary_of_stats)
 
-        avg_time = 0
-        number_events=0
-        for key in testXcidDictionary:
-            number_events=number_events + len(testXcidDictionary[key])
+        # for key in testXcidDictionary:
+        #     number_events=number_events + len(testXcidDictionary[key])
 
         for key in testXcidDictionary:
+            avg_time[key] = 0
+            number_events=len(testXcidDictionary[key])
             for event in testXcidDictionary[key]:
-                avg_time = avg_time + (event['timestamp']/number_events)
-        print(avg_time)
+                avg_time[key] = avg_time[key] + (event['timestamp']/number_events)
+
         for buf_idx in buf_indices:
             gpu_events = parse_gpu_event_file(avg_time, npkit_dump_dir, npkit_event_def, rank, buf_idx, gpu_clock_scale, cpu_clock_scale, dictionary_of_stats)
             trace['traceEvents'].extend(gpu_events)
