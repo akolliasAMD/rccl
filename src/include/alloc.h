@@ -169,7 +169,8 @@ ncclResult_t ncclCudaMallocDebug(const char *filefunc, int line, T** ptr, size_t
 #if defined(HIP_UNCACHED_MEMORY)
     CUDACHECKGOTO(hipExtMallocWithFlags((void**)ptr, nelem*sizeof(T), hipDeviceMallocUncached), result, finish);
 #else
-    CUDACHECKGOTO(hipExtMallocWithFlags((void**)ptr, nelem*sizeof(T), hipDeviceMallocFinegrained), result, finish);
+    CUDACHECKGOTO(hipExtMallocWithFlags((void**)ptr, nelem*sizeof(T), hipDeviceMallocUncached), result, finish);
+    // CUDACHECKGOTO(hipExtMallocWithFlags((void**)ptr, nelem*sizeof(T), hipDeviceMallocFinegrained), result, finish);
 #endif
   } else
     CUDACHECKGOTO(cudaMalloc(ptr, nelem*sizeof(T)), result, finish);
@@ -195,7 +196,8 @@ ncclResult_t ncclCudaCallocDebug(const char *filefunc, int line, T** ptr, size_t
 #if defined(HIP_UNCACHED_MEMORY)
     CUDACHECKGOTO(hipExtMallocWithFlags((void**)ptr, nelem*sizeof(T), hipDeviceMallocUncached), result, finish);
 #else
-    CUDACHECKGOTO(hipExtMallocWithFlags((void**)ptr, nelem*sizeof(T), hipDeviceMallocFinegrained), result, finish);
+    CUDACHECKGOTO(hipExtMallocWithFlags((void**)ptr, nelem*sizeof(T), hipDeviceMallocUncached), result, finish);
+    // CUDACHECKGOTO(hipExtMallocWithFlags((void**)ptr, nelem*sizeof(T), hipDeviceMallocFinegrained), result, finish);
 #endif
   } else
     CUDACHECKGOTO(cudaMalloc(ptr, nelem*sizeof(T)), result, finish);

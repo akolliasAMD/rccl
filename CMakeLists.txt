@@ -143,7 +143,7 @@ endif()
 check_symbol_exists("hipEventDisableSystemFence" "hip/hip_runtime_api.h" HIP_EVENT_DISABLE_FENCE)
 
 ### Check for hipDeviceMallocUncached support
-check_symbol_exists("hipDeviceMallocUncached" "hip/hip_runtime_api.h" HIP_UNCACHED_MEMORY)
+# check_symbol_exists("hipDeviceMallocUncached" "hip/hip_runtime_api.h" HIP_UNCACHED_MEMORY)
 
 ### Check for indirect function call support
 if(ENABLE_IFC)
@@ -477,7 +477,7 @@ if (ENABLE_MSCCL_KERNEL)
   )
   list(APPEND SRC_FILES ${MSCCL_KERNEL_SOURCES})
 endif()
-  
+
 # Hipify source files (copy of source generated into hipify directory)
 #==================================================================================================
 find_program(hipify-perl_executable hipify-perl)
@@ -570,7 +570,7 @@ if(${HIP_EVENT_DISABLE_FENCE})
   target_compile_definitions(rccl PRIVATE HIP_EVENT_DISABLE_FENCE)
 endif()
 if(${hipcc_version_string} VERSION_GREATER_EQUAL "5.7.31920")
-  target_compile_definitions(rccl PRIVATE HIP_UNCACHED_MEMORY)
+  # target_compile_definitions(rccl PRIVATE HIP_UNCACHED_MEMORY)
   message(STATUS "HIP_UNCACHED_MEMORY enabled")
 else()
   # keep --hipcc-func-supp on older HIP and compiler
