@@ -819,7 +819,9 @@ ncclResult_t ncclTopoGetLocalNet(struct ncclTopoSystem* system, int rank, int ch
   NCCLCHECK(ncclTopoGetLocal(system, GPU, gpu, NET, &localNets, &localNetCount, NULL));
   int* localGpus;
   int localGpuCount;
-  NCCLCHECK(ncclTopoGetLocal(system, NET, localNets[0], GPU, &localGpus, &localGpuCount, NULL));
+  if (localNetCount == 0) {NCCLCHECK(ncclTopoGetLocal(system, NET, 0, GPU, &localGpus, &localGpuCount, NULL));}
+  else {NCCLCHECK(ncclTopoGetLocal(system, NET, localNets[0], GPU, &localGpus, &localGpuCount, NULL));}
+  //NCCLCHECK(ncclTopoGetLocal(system, NET, localNets[0], GPU, &localGpus, &localGpuCount, NULL));
   int net = 0;
   for (int i = 0; i < localGpuCount; i++) {
     if (gpu == localGpus[i]) {
