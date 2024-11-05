@@ -173,7 +173,7 @@ __device__ __forceinline__ void mscclRunInterpreter(
   int xcc_id = 0;
   if (tid == 0) {
     ncclShmem.event_buffer_head = 0;
-#if defined(__gfx940__) || defined(__gfx941__) || defined(__gfx942__)
+#if defined(__gfx942__)
     asm volatile ("s_getreg_b32 %0, hwreg(HW_REG_XCC_ID)" : "=s" (xcc_id));
 #endif
   }

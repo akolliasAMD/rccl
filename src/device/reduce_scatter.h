@@ -11,7 +11,7 @@
 
 namespace {
   template<typename T, typename RedOp, typename Proto>
-#if defined(USE_INDIRECT_FUNCTION_CALL) && !defined(__gfx940__) && !defined(__gfx941__) && !defined(__gfx942__)
+#if defined(USE_INDIRECT_FUNCTION_CALL) && !defined(__gfx942__)
   __device__ void runRing(ncclWorkElem *args) {
 #else
   __device__ __attribute__((noinline)) void runRing(ncclWorkElem *args) {
@@ -94,7 +94,7 @@ struct RunWorkElement<ncclFuncReduceScatter, T, RedOp, NCCL_ALGO_NVLS, NCCL_PROT
     size_t offset;
     int nelem;
 
-    /* if we are direct NVLS, we only need to allocate 1 warp to scatter for sync; 
+    /* if we are direct NVLS, we only need to allocate 1 warp to scatter for sync;
      * if not, based on #ranks, we allocate 7 or 5 warps to reduce to saturate bandwidth
      * and the rest are allocated to scatter. */
     const int nThreadsReduce = args->regUsed ? (NCCL_MAX_NTHREADS - WARP_SIZE) : (nranks <= 6 ? 7 * WARP_SIZE : 5 * WARP_SIZE);
