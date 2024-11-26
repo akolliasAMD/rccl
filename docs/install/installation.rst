@@ -50,7 +50,7 @@ RCCL build & installation helper script options:
     -i|--install               Install RCCL library (see --prefix argument below)
     -j|--jobs                  Specify how many parallel compilation jobs to run ($nproc by default)
     -l|--local_gpu_only        Only compile for local GPU architecture
-       --amdgpu_targets        Only compile for specified GPU architecture(s). For multiple targets, seperate by ';' (builds for all supported GPU architectures by default)
+       --gpu_targets           Only compile for specified GPU architecture(s). For multiple targets, seperate by ';' (builds for all supported GPU architectures by default)
        --no_clean              Don't delete files if they already exist
        --npkit-enable          Compile with npkit enabled
        --openmp-test-enable    Enable OpenMP in rccl unit tests
@@ -66,7 +66,7 @@ RCCL build & installation helper script options:
        --verbose               Show compile commands
 
 .. tip::
-    By default, RCCL builds for all GPU targets defined in ``DEFAULT_GPUS`` in `CMakeLists.txt <https://github.com/ROCm/rccl/blob/develop/CMakeLists.txt>`_. To target specific GPU(s), and potentially reduce build time, use ``--amdgpu_targets`` as a ``;`` separated string listing GPU(s) to target.
+    By default, RCCL builds for all GPU targets defined in ``DEFAULT_GPUS`` in `CMakeLists.txt <https://github.com/ROCm/rccl/blob/develop/CMakeLists.txt>`_. To target specific GPU(s), and potentially reduce build time, use ``--gpu_targets`` as a ``;`` separated string listing GPU(s) to target.
 
 Manual build
 ============
@@ -158,7 +158,7 @@ Improving performance on MI300 when using less than 8 GPUs
 ==========================================================
 
 On a system with 8\*MI300X GPUs, each pair of GPUs are connected with dedicated XGMI links in a fully-connected topology. So, for collective operations, one can achieve good performance when all 8 GPUs (and all XGMI links) are used. When using less than 8 GPUs, one can only achieve a fraction of the potential bandwidth on the system.
-But, if your workload warrants using less than 8 MI300 GPUs on a system, you can set the run-time variable `NCCL_MIN_NCHANNELS` to increase the number of channels. 
+But, if your workload warrants using less than 8 MI300 GPUs on a system, you can set the run-time variable `NCCL_MIN_NCHANNELS` to increase the number of channels.
 
 For example: ``export NCCL_MIN_NCHANNELS=32``
 

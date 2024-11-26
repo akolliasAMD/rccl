@@ -45,7 +45,7 @@ RCCL build & installation helper script
     -i|--install               Install RCCL library (see --prefix argument below)
     -j|--jobs                  Specify how many parallel compilation jobs to run ($nproc by default)
     -l|--local_gpu_only        Only compile for local GPU architecture
-       --amdgpu_targets        Only compile for specified GPU architecture(s). For multiple targets, seperate by ';' (builds for all supported GPU architectures by default)
+       --gpu_targets           Only compile for specified GPU architecture(s). For multiple targets, seperate by ';' (builds for all supported GPU architectures by default)
        --no_clean              Don't delete files if they already exist
        --npkit-enable          Compile with npkit enabled
        --openmp-test-enable    Enable OpenMP in rccl unit tests
@@ -61,7 +61,7 @@ RCCL build & installation helper script
        --verbose               Show compile commands
 ```
 
-By default, RCCL builds for all GPU targets defined in `DEFAULT_GPUS` in `CMakeLists.txt`. To target specific GPU(s), and potentially reduce build time, use `--amdgpu_targets` as a `;` separated string listing GPU(s) to target.
+By default, RCCL builds for all GPU targets defined in `DEFAULT_GPUS` in `CMakeLists.txt`. To target specific GPU(s), and potentially reduce build time, use `--gpu_targets` as a `;` separated string listing GPU(s) to target.
 
 ## Manual build
 
